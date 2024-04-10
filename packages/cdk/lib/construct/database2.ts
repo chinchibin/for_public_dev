@@ -8,7 +8,7 @@ export class Database2 extends Construct {
     super(scope, id);
 
     const table = new ddb.Table(this, 'Table', {
-      tableName: 'Prompt',
+      tableName: 'Prompt-DEV',
       partitionKey: {
         name: 'userId',
         type: ddb.AttributeType.STRING,
