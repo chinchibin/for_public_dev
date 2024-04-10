@@ -54,7 +54,7 @@ const anonymousUsageTracking: boolean = !!app.node.tryGetContext(
 
 const generativeAiUseCasesStack = new GenerativeAiUseCasesStack(
   app,
-  'GenerativeAiUseCasesStack-Dev',
+  'GenerativeAiUseCasesStack-DEV',
   {
     env: {
       region: process.env.CDK_DEFAULT_REGION,
