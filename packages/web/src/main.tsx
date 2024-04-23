@@ -24,6 +24,10 @@ import GenerateImagePage from './pages/GenerateImagePage';
 import TranscribePage from './pages/TranscribePage';
 import AgentChatPage from './pages/AgentChatPage.tsx';
 import FileUploadPage from './pages/FileUploadPage.tsx';
+import DocumentPage from './pages/DocumentPage.tsx';
+// checkboxなどコンポーネント中のicon
+import { initializeIcons } from '@fluentui/react/lib/Icons';
+initializeIcons(/* optional base url */);
 
 const ragEnabled: boolean = import.meta.env.VITE_APP_RAG_ENABLED === 'true';
 const samlAuthEnabled: boolean =
@@ -80,6 +84,10 @@ const routes: RouteObject[] = [
   {
     path: '/transcribe',
     element: <TranscribePage />,
+  },
+  {
+    path: '/document',
+    element: <DocumentPage />,
   },
   recognizeFileEnabled
     ? {
