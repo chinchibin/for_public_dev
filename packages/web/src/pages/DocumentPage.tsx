@@ -61,12 +61,13 @@ const DocumentPage: React.FC = () => {
 
   // const { state } = useLocation() as Location<EditorialPageLocationState>;
   const { pathname } = useLocation();
-  const { documentList } = useDocument(pathname);
-
-  console.log(documentList);
+  const { documentList, gotoDir, dirList } = useDocument(pathname);
 
   const [openDialog, setOpenDialog] = useState(false);
+  const [delBtnVisible, setBtnVisible] = useState(false);
+
   const refFile = useRef<HTMLInputElement>(null);
+
 
   // ========== drop upload ==========
   const onDropFile = (e: React.DragEvent<HTMLInputElement>) => {
@@ -95,10 +96,17 @@ const DocumentPage: React.FC = () => {
     }
   };
 
-
   // ========== check and delete ==========
-  const onChangeCheck = (ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined, checked?: boolean) => {
-    console.log('333', checked);
+  // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
+  const onChangeCheck = (checked?: boolean, data?: Object) => {
+    data.checked = checked;
+    console.log('333', checked, data);
+
+    // Check the checked status of checkbox
+    let flag = documentList.some((item, i) => {
+      return item.checked;
+    });
+    setBtnVisible(flag);
   };
 
   const onClickDelete = (e: React.MouseEvent<HTMLInputElement>) => {
@@ -109,6 +117,13 @@ const DocumentPage: React.FC = () => {
   const onDeleteExec = (e: React.MouseEvent<HTMLInputElement>) => {
     console.log(111);
     setOpenDialog(false);
+  };
+
+  // ========== click dir ==========
+  const onClickDir = (e: React.MouseEvent<HTMLInputElement>, dirPath: String) => {
+    console.log('go to dir:', dirPath);
+    e.preventDefault();
+    gotoDir(dirPath);
   };
 
   return (
@@ -148,11 +163,13 @@ const DocumentPage: React.FC = () => {
             </div>
           </Card>
           <div className="flex justify-end mt-6 mb-3">
-            <span className="cursor-pointer select-none mr-3" onClick={onClickDelete}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-              </svg>
-            </span>
+            {delBtnVisible && (
+              <span className="cursor-pointer select-none mr-3" onClick={onClickDelete}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+              </span>
+            )}
             <span className="cursor-pointer select-none" onClick={onClickUploadBtn}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
@@ -171,12 +188,14 @@ const DocumentPage: React.FC = () => {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 fill-black stroke-white mr-2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
             </svg>
-            <span>/</span>
-            <a href="/home" className="mx-1 hover:text-blue-700">MSS</a>
-            <span>/</span>
-            <a href="/home" className="mx-1 hover:text-blue-700">1_設計書</a>
-            <span>/</span>
-            <a className="mx-1">2_テスト資料</a>
+            {dirList?.map((dir: Object, i: Number) => {
+              return (
+                <>
+                  <span key={'slash_' + i}>/</span>
+                  <a key={'dirname_' + i} href={dir.dirPath || 'javascript:;'} className="mx-1 hover:text-blue-700" onClick={(e: MouseEvent) => { dir.dirPath && onClickDir(e, dir.dirPath) }}>{dir.name}</a>
+                </>
+              );
+            })}
           </div>
 
           <Card>
@@ -184,17 +203,39 @@ const DocumentPage: React.FC = () => {
               <tbody>
                 {documentList?.map((data: Object, index: Number) => {
                   return (
-                    <tr>
+                    <tr key={'tr_' + index}>
                       <td className="w-8">
-                        {data.type === 1 && (<Checkbox onChange={onChangeCheck}></Checkbox>)}
+                        {data.type !== 2 && (<Checkbox onChange={(e, checked) => { onChangeCheck(checked, data) }}></Checkbox>)}
                       </td>
                       <td className="w-8">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                        {data.type !== 1 && (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                        </svg>
+                        </svg>)}
+
+                        {data.type === 1 && (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                        </svg>)}
                       </td>
                       <td className="py-2">
-                        <a href="" className="text-sky-600">{data.name}</a>
+                        {
+                          data.type === 0 && (
+                            <a href={`${data.dirPath}/${data.name}`} className="text-sky-600" onClick={(e: MouseEvent) => { onClickDir(e, `${data.dirPath}/${data.name}`) }}>{data.name}</a>
+                          )
+                        }
+                        {
+                          data.type === 1 && (
+                            <a className="text-sky-600">{data.name}</a>
+                          )
+                        }
+                        {
+                          data.type === 2 && (
+                            <a href={data.dirPath} className="text-sky-600" onClick={(e: MouseEvent) => { onClickDir(e, `${data.dirPath}/${data.name}`) }}>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                              </svg>
+                            </a>
+                          )
+                        }
                       </td>
                       <td className="w-16">
                         <span className="whitespace-nowrap">{data.updateTime}</span>
@@ -205,66 +246,6 @@ const DocumentPage: React.FC = () => {
                     </tr>
                   );
                 })}
-
-                
-                {/* template : type = folder */}
-                <tr>
-                  <td className="w-8">
-                  </td>
-                  <td className="w-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                    </svg>
-                  </td>
-                  <td className="py-2">
-                    <a href="" className="text-sky-600">テスト資料_20240422.xlsx</a>
-                  </td>
-                  <td className="w-16">
-                    <span className="whitespace-nowrap">1分前</span>
-                  </td>
-                  <td className="w-16">
-                    <span className="whitespace-nowrap"></span>
-                  </td>
-                </tr>
-                {/* template : type = file */}
-                <tr>
-                  <td className="w-8">
-                    <Checkbox onChange={onChangeCheck}></Checkbox>
-                  </td>
-                  <td className="w-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                    </svg>
-                  </td>
-                  <td className="py-2">
-                    <a href="" className="text-sky-600">テスト資料_20240422.xlsx</a>
-                  </td>
-                  <td className="w-16">
-                    <span className="whitespace-nowrap">1分前</span>
-                  </td>
-                  <td className="w-16">
-                    <span className="whitespace-nowrap">1,234 MB</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="w-8">
-                    <Checkbox></Checkbox>
-                  </td>
-                  <td className="w-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                    </svg>
-                  </td>
-                  <td className="py-2">
-                    <a href="" className="text-sky-600">テスト資料_20240422.xlsx</a>
-                  </td>
-                  <td className="w-16">
-                    <span className="whitespace-nowrap">1分前</span>
-                  </td>
-                  <td className="w-16">
-                    <span className="whitespace-nowrap">1,234 MB</span>
-                  </td>
-                </tr>
               </tbody>
             </table>
           </Card>
