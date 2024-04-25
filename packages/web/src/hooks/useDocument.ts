@@ -1,6 +1,9 @@
 import { produce } from 'immer';
 import { useEffect, useMemo } from 'react';
 import { create } from 'zustand';
+import useFileApi from './useFileApi';
+
+let testIdx = 0;
 
 const useDocumentState = create<{
   documentList: {
@@ -17,7 +20,10 @@ const useDocumentState = create<{
     dirPath: String, // current folder's absolute path
   }[],
   getData: (dirPath: String) => void;
+  uploadFile: (file: File) => Promise<void>;
 }>((set, get) => {
+
+  const api = useFileApi();
 
   const updateDocumentList = (list: any[]) => {
     set((state) => {
@@ -38,7 +44,12 @@ const useDocumentState = create<{
         return { dirList };
       }
 
-      let strList = list[list.length - 1].dirPath?.replace(/^\//g, '').split('/');
+      let dirPath = list[list.length - 1].dirPath;
+      if (!dirPath) {
+        return { dirList };
+      }
+
+      let strList = dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/');
 
       let curPath = '';
       strList.map((name: String, i: Number) => {
@@ -49,12 +60,43 @@ const useDocumentState = create<{
         })
       });
 
+      // the last dir don't refresh
       if (dirList.length > 0) {
         dirList[dirList.length - 1].dirPath = '';
       }
 
       return { dirList };
     });
+  };
+
+  const uploadFile = async (file: File) => {
+    // set(() => ({
+    //   loading: true,
+    //   recognizedText: '',
+    // }));
+
+    const mediaFormat = file?.name.split('.').pop() as string;
+
+    // 署名付き URL の取得
+    const signedUrlRes = await api.getSignedUrl({
+      mediaFormat: mediaFormat,
+    });
+    const signedUrl = signedUrlRes.data;
+    const fileUrl = signedUrl.split(/[?#]/)[0]; // 署名付き url からクエリパラメータを除外
+
+    // ファイルのアップロード
+    await api.uploadFile(signedUrl, { file: file });
+
+    // ファイル認識
+    const res = await api
+      .recognizeFile({
+        fileUrl: fileUrl,
+      })
+      .finally(() => {
+        // set(() => ({
+        //   loading: false,
+        // }));
+      });
   };
 
   return {
@@ -65,10 +107,26 @@ const useDocumentState = create<{
 
       try {
         // get data by dirPath. dirPath default is ''
+
+        // --------------- mock data start ---------------
         await new Promise(resolve => setTimeout(resolve, 200));
 
-        // mock data 
-        list = [
+        let foramtPath = dirPath?.replace(/\/+$/g, '');
+
+        for (let i = 0; i < 4; i++) {
+          list.push({
+            id: i.toString(),
+            type: i === 0 ? 0 : 1,   // 0-folder, 1-file
+            name: i === 0 ? '設計書履歴_' + testIdx : 'ファイル_' + testIdx,
+            updateTime: '数秒前',
+            size: '',
+            dirPath: foramtPath || '',
+            desc: '',
+          });
+          testIdx++;
+        }
+
+        let list1 = [
           {
             id: '1',
             type: 0,   // 0-folder, 1-file
@@ -97,6 +155,7 @@ const useDocumentState = create<{
             desc: '',
           }
         ];
+        // --------------- mock data end ---------------
 
       } catch (e) {
         console.log(e);
@@ -104,11 +163,12 @@ const useDocumentState = create<{
       } finally {
       }
 
+      console.log(list)
 
       // add prev folder
-      if (list.length > 0) {
-        let arr = list[0].dirPath?.replace(/^\//g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
-        arr.pop(); // [ MSS, 1_設計書 ]
+      if (list.length > 0 && list[0].dirPath) {
+        let arr = list[0].dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
+        arr?.pop(); // [ MSS, 1_設計書 ]
         let prevPath = '/' + arr.join('/'); //  /MSS/1_設計書
         list.unshift(
           {
@@ -126,6 +186,7 @@ const useDocumentState = create<{
       updateDocumentList(list);
       updateDirList(list);
     },
+    uploadFile,
   };
 });
 
@@ -133,7 +194,8 @@ const useDocument = (id: string) => {
   const {
     documentList,
     dirList,
-    getData
+    getData,
+    uploadFile
   } = useDocumentState();
 
   useEffect(() => {
@@ -144,6 +206,7 @@ const useDocument = (id: string) => {
     documentList,
     dirList,
     gotoDir: getData,
+    uploadFile,
   };
 };
 export default useDocument;

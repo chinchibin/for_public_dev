@@ -61,27 +61,38 @@ const DocumentPage: React.FC = () => {
 
   // const { state } = useLocation() as Location<EditorialPageLocationState>;
   const { pathname } = useLocation();
-  const { documentList, gotoDir, dirList } = useDocument(pathname);
+  const { documentList, gotoDir, dirList, uploadFile } = useDocument(pathname);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [delBtnVisible, setBtnVisible] = useState(false);
 
   const refFile = useRef<HTMLInputElement>(null);
 
-
   // ========== drop upload ==========
-  const onDropFile = (e: React.DragEvent<HTMLInputElement>) => {
+  // const onClickExec = useCallback(() => {
+  //   if (loading) return;
+  //   recognizeFile();
+  // }, [recognizeFile, loading]);
+
+  const onDropFile = async (e: React.DragEvent<HTMLInputElement>) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
     console.log(files.length);
 
-    if (files && files[0]) {
-      let file = files[0];
-      console.log(file);
-    }
+    if (!files || files.length === 0) return;
 
-    // clear files
-    e.dataTransfer.clearData();
+    let file: File = files[0];
+    console.log(file);
+    try {
+      await uploadFile(file);
+
+      // refresh page
+      gotoDir(documentList[0]?.dirPath);
+    } catch (e) {
+    } finally {
+      // clear files
+      e.dataTransfer.clearData();
+    }
   };
 
   // ========== click upload ==========
@@ -89,10 +100,21 @@ const DocumentPage: React.FC = () => {
     refFile.current?.click()
   };
 
-  const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files[0]) {
-      console.log(333, files[0])
+    if (!files || files.length === 0) return;
+
+    let file: File = files[0];
+    console.log(file);
+    try {
+      await uploadFile(file);
+
+      // refresh page
+      gotoDir(documentList[0]?.dirPath);
+    } catch (e) {
+    } finally {
+      // clear files
+      e.target.value = '';
     }
   };
 
@@ -184,15 +206,21 @@ const DocumentPage: React.FC = () => {
               accept=".csv, .doc, .docx, .md, .pdf, .ppt, .pptx, .tsv, .xlsx"
               ref={refFile}></input>
           </div>
-          <div className="flex flex-center bg-gray-300 p-2 items-center font-bold">
+          <div className="flex flex-center bg-gray-300 p-2 items-center font-bold" key="123">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 fill-black stroke-white mr-2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
             </svg>
+            <span>/</span>
             {dirList?.map((dir: Object, i: Number) => {
               return (
                 <>
+                  {
+                    dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: MouseEvent) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)
+                  }
+                  {
+                    !dir.dirPath && (<a key={'dirname_' + i} className="mx-1 hover:text-blue-700">{dir.name}</a>)
+                  }
                   <span key={'slash_' + i}>/</span>
-                  <a key={'dirname_' + i} href={dir.dirPath || 'javascript:;'} className="mx-1 hover:text-blue-700" onClick={(e: MouseEvent) => { dir.dirPath && onClickDir(e, dir.dirPath) }}>{dir.name}</a>
                 </>
               );
             })}
