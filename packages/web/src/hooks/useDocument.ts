@@ -2,6 +2,7 @@ import { produce } from 'immer';
 import { useEffect, useMemo } from 'react';
 import { create } from 'zustand';
 import useFileApi from './useFileApi';
+import useHttp from '../hooks/useHttp';
 
 let testIdx = 0;
 
@@ -103,58 +104,34 @@ const useDocumentState = create<{
     dirList: [],
     documentList: [],
     getData: async (dirPath?: String) => {
+      const http = useHttp();
       let list: any[] = [];
 
       try {
         // get data by dirPath. dirPath default is ''
 
         // --------------- mock data start ---------------
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // await new Promise(resolve => setTimeout(resolve, 200));
+        const res = await http.post('http://localhost:5173/mock/getDocument.json', {});
+        let { result, data } = res.data;
 
-        let foramtPath = dirPath?.replace(/\/+$/g, '');
+        if (result === '200') list = data;
 
-        for (let i = 0; i < 4; i++) {
-          list.push({
-            id: i.toString(),
-            type: i === 0 ? 0 : 1,   // 0-folder, 1-file
-            name: i === 0 ? '設計書履歴_' + testIdx : 'ファイル_' + testIdx,
-            updateTime: '数秒前',
-            size: '',
-            dirPath: foramtPath || '',
-            desc: '',
-          });
-          testIdx++;
-        }
+        // let foramtPath = dirPath?.replace(/\/+$/g, '');
+        // for (let i = 0; i < 4; i++) {
+        //   list.push({
+        //     id: i.toString(),
+        //     type: i === 0 ? 0 : 1,   // 0-folder, 1-file
+        //     name: i === 0 ? '設計書履歴_' + testIdx : 'ファイル_' + testIdx,
+        //     updateTime: '数秒前',
+        //     size: '',
+        //     dirPath: foramtPath || '',
+        //     desc: '',
+        //   });
+        //   testIdx++;
+        // }
+        console.log(list);
 
-        let list1 = [
-          {
-            id: '1',
-            type: 0,   // 0-folder, 1-file
-            name: '設計書履歴',
-            updateTime: '数秒前',
-            size: '',
-            dirPath: '/MSS/1_設計書/2_テスト資料',
-            desc: '',
-          },
-          {
-            id: '2',
-            type: 1, // 0-folder, 1-file
-            name: 'エビデンス_20240422.xlsx',
-            updateTime: '1分前',
-            size: '1,234 MB',
-            dirPath: '/MSS/1_設計書/2_テスト資料',
-            desc: '',
-          },
-          {
-            id: '3',
-            type: 1, // 0-folder, 1-file
-            name: '設計書_20240420.doc',
-            updateTime: '10分前',
-            size: '5,234 MB',
-            dirPath: '/MSS/1_設計書/2_テスト資料',
-            desc: '',
-          }
-        ];
         // --------------- mock data end ---------------
 
       } catch (e) {
