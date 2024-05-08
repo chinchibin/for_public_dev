@@ -160,7 +160,6 @@ const DocumentPage: React.FC = () => {
           <div>
             選択している項目を削除してもよろしいでしょうか？
           </div>
-
           <div className="mt-4 flex justify-end gap-2">
             <Button outlined onClick={() => { setOpenDialog(false); }} className="p-2">
               Cancel
@@ -206,22 +205,22 @@ const DocumentPage: React.FC = () => {
               accept=".csv, .doc, .docx, .md, .pdf, .ppt, .pptx, .tsv, .xlsx"
               ref={refFile}></input>
           </div>
-          <div className="flex flex-center bg-gray-300 p-2 items-center font-bold" key="123">
+          <div className="flex flex-center bg-gray-300 p-2 items-center font-bold">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 fill-black stroke-white mr-2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
             </svg>
             <span>/</span>
             {dirList?.map((dir: Object, i: Number) => {
               return (
-                <>
+                <React.Fragment key={'dirname_' + i}>
                   {
-                    dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: MouseEvent) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)
+                    dir.dirPath && (<a href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: MouseEvent) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)
                   }
                   {
-                    !dir.dirPath && (<a key={'dirname_' + i} className="mx-1 hover:text-blue-700">{dir.name}</a>)
+                    !dir.dirPath && (<a className="mx-1 hover:text-blue-700">{dir.name}</a>)
                   }
-                  <span key={'slash_' + i}>/</span>
-                </>
+                  <span>/</span>
+                </React.Fragment>
               );
             })}
           </div>
