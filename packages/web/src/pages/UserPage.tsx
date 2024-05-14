@@ -104,25 +104,25 @@ const UserPage: React.FC = () => {
           ユーザ一覧
         </div>
         <div className="col-span-12 col-start-1 mx-2 lg:col-span-10 lg:col-start-2 xl:col-span-10 xl:col-start-2">
-          <div className="flex">
-            <div className="mr-8">
+          <div className="w-2/5">
+            <div>
               <ChoiceGroup
                 options={options[0]}
                 selectedKey={selectedKey}
                 onChange={onChange}
               />
-              <div className="pt-2">
+              <div className="pt-2 ml-7">
                 <TextField placeholder='社員番号' disabled={selectedKey !== '0'}
                   onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setBango(newValue) }} />
               </div>
             </div>
-            <div>
+            <div className="mt-3">
               <ChoiceGroup
                 options={options[1]}
                 selectedKey={selectedKey}
                 onChange={onChange}
               />
-              <div className="pt-2">
+              <div className="pt-2 ml-7">
                 <TextField placeholder='メールアドレス' disabled={selectedKey === '0'}
                   onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setEmail(newValue) }} />
               </div>
@@ -153,7 +153,7 @@ const UserPage: React.FC = () => {
               </tr>
             </thead>
           </table>
-          <div style={{ height: '500px' }} className="overflow-y-auto">
+          <div style={{ height: '500px' }} className="overflow-y-auto mb-4">
             <table className="w-full" style={{ marginTop: '-1px' }}>
               <tbody>
                 {userList?.map((data: Object, index: Number) => {

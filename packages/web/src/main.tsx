@@ -26,6 +26,7 @@ import AgentChatPage from './pages/AgentChatPage.tsx';
 import FileUploadPage from './pages/FileUploadPage.tsx';
 import DocumentPage from './pages/DocumentPage.tsx';
 import UserPage from './pages/UserPage.tsx';
+import LogPage from './pages/LogPage.tsx';
 // checkboxなどコンポーネント中のicon
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 initializeIcons(/* optional base url */);
@@ -93,6 +94,10 @@ const routes: RouteObject[] = [
   {
     path: '/user',
     element: <UserPage />,
+  },
+  {
+    path: '/log',
+    element: <LogPage />,
   },
   recognizeFileEnabled
     ? {

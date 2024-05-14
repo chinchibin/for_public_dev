@@ -5,8 +5,8 @@ import useHttp from './useHttp';
 
 let testIdx = 0;
 
-const useUserState = create<{
-  userList: {
+const useLogState = create<{
+  logList: {
     bango: String,
     email: String,
     status: String,
@@ -15,16 +15,16 @@ const useUserState = create<{
   getData: (type: number, value: string) => void;
 }>((set, get) => {
 
-  const updateUserList = (list: any[]) => {
+  const updateLogList = (list: any[]) => {
     set((state) => {
       return {
-        userList: list
+        logList: list
       };
     });
   };
 
   return {
-    userList: [],
+    logList: [],
     getData: async (data?: object) => {
       const http = useHttp();
       let list: any[] = [];
@@ -33,15 +33,15 @@ const useUserState = create<{
         // --------------- mock data start ---------------
         let params = data;
         await new Promise(resolve => setTimeout(resolve, 200));
-        //const res = await http.post('chats', {});
+        // const res = await http.post('chats', {});
 
         for (let i = 1; i < 11; i++) {
           let id = i.toString().padStart(4, '0');
           list.push({
             bango: `${id}`,
             email: `test.${id}@miraito-one.com`,
-            status: '有効',
-            role: '利用者',
+            createdTime: '2024/04/15 14:08:23',
+            content: '選択された場合にメールアドレスのテキストボックスを有効にする\r\n選択された場合に社員番号のテキストボックスを無効にする',
           });
           testIdx++;
         }
@@ -52,24 +52,24 @@ const useUserState = create<{
         list = [];
       } finally {
       }
-      updateUserList(list);
+      updateLogList(list);
     },
   };
 });
 
-const useUser = (id: string) => {
+const useLog = (id: string) => {
   const {
-    userList,
+    logList,
     getData,
-  } = useUserState();
+  } = useLogState();
 
   useEffect(() => {
     getData();
   }, [getData]);
 
   return {
-    userList,
+    logList,
     search: getData,
   };
 };
-export default useUser;
+export default useLog;
