@@ -15,6 +15,8 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
+    "@typescript-eslint/no-explicit-any": ['off'],
+    "@typescript-eslint/no-unused-vars" : ['off'],
     // Prettire で実施するので ESLint の Rule は無効化
     'tailwindcss/classnames-order': ['off'],
     // x-screen h-screen を size-screen と書くという指示が出るが

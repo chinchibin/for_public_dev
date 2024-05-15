@@ -1,33 +1,33 @@
-import { produce } from 'immer';
-import { useEffect, useMemo } from 'react';
+//import { produce } from 'immer';
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import useFileApi from './useFileApi';
 import useHttp from '../hooks/useHttp';
 
-let testIdx = 0;
+//let testIdx = 0;
 
 const useDocumentState = create<{
   documentList: {
-    id: String,
-    type: Number,   // 0-folder, 1-file
-    name: String,
-    updateTime: String,
-    size: String,
-    dirPath: String,
-    desc: String,
+    id: string,
+    type: number,   // 0-folder, 1-file
+    name: string,
+    updateTime: string,
+    size: string,
+    dirPath: string,
+    desc: string,
   }[];
   dirList: {
-    name: String, // current folder's name
-    dirPath: String, // current folder's absolute path
+    name: string, // current folder's name
+    dirPath: string, // current folder's absolute path
   }[],
-  getData: (dirPath: String) => void;
+  getData: (dirPath: string) => void;
   uploadFile: (file: File) => Promise<void>;
-}>((set, get) => {
+}>((set) => {
 
   const api = useFileApi();
 
   const updateDocumentList = (list: any[]) => {
-    set((state) => {
+    set((_state) => {
       list.forEach((item) => {
         item.checked = false; // type=file，checkbox あり
       });
@@ -38,22 +38,22 @@ const useDocumentState = create<{
   };
 
   const updateDirList = (list: any[]) => {
-    set((state) => {
-      let dirList: any[] = [];
+    set((_state) => {
+      const dirList: any[] = [];
 
       if (list.length == 0) {
         return { dirList };
       }
 
-      let dirPath = list[list.length - 1].dirPath;
+      const dirPath = list[list.length - 1].dirPath;
       if (!dirPath) {
         return { dirList };
       }
 
-      let strList = dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/');
+      const strList = dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/');
 
       let curPath = '';
-      strList.map((name: String, i: Number) => {
+      strList.map((name: string, _i: number) => {
         curPath += '/' + name;
         dirList.push({
           name: name,
@@ -89,7 +89,8 @@ const useDocumentState = create<{
     await api.uploadFile(signedUrl, { file: file });
 
     // ファイル認識
-    const res = await api
+    //const res = 
+    await api
       .recognizeFile({
         fileUrl: fileUrl,
       })
@@ -98,12 +99,14 @@ const useDocumentState = create<{
         //   loading: false,
         // }));
       });
+    
+
   };
 
   return {
     dirList: [],
     documentList: [],
-    getData: async (dirPath?: String) => {
+    getData: async (_dirPath?: string) => {
       const http = useHttp();
       let list: any[] = [];
 
@@ -113,7 +116,7 @@ const useDocumentState = create<{
         // --------------- mock data start ---------------
         // await new Promise(resolve => setTimeout(resolve, 200));
         const res = await http.post('http://localhost:5173/mock/getDocument.json', {});
-        let { result, data } = res.data;
+        const  {result, data}  = res.data;
 
         if (result === '200') list = data;
 
@@ -138,15 +141,16 @@ const useDocumentState = create<{
         console.log(e);
         list = [];
       } finally {
+        console.log(list)
       }
 
-      console.log(list)
+      
 
       // add prev folder
       if (list.length > 0 && list[0].dirPath) {
-        let arr = list[0].dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
+        const arr = list[0].dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
         arr?.pop(); // [ MSS, 1_設計書 ]
-        let prevPath = '/' + arr.join('/'); //  /MSS/1_設計書
+        const prevPath = '/' + arr.join('/'); //  /MSS/1_設計書
         list.unshift(
           {
             id: '0',
@@ -176,8 +180,8 @@ const useDocument = (id: string) => {
   } = useDocumentState();
 
   useEffect(() => {
-    getData();
-  }, [getData]);
+    getData(id);
+  }, [id, getData]);
 
   return {
     documentList,

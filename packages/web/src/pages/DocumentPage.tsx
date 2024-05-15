@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Location, useLocation } from 'react-router-dom';
-import { create } from 'zustand';
-import useTyping from '../hooks/useTyping';
-import { MODELS } from '../hooks/useModel';
+import React, { useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+//import { create } from 'zustand';
+//import useTyping from '../hooks/useTyping';
+//import { MODELS } from '../hooks/useModel';
 import useDocument from '../hooks/useDocument';
 
 import Card from '../components/Card';
@@ -10,52 +10,52 @@ import Button from '../components/Button';
 import ModalDialog from '../components/ModalDialog';
 import { Checkbox } from '@fluentui/react'; // import  Checkbox  from '../components/Checkbox';
 
-type StateType = {
-  modelId: string;
-  setModelId: (c: string) => void;
-  sentence: string;
-  setSentence: (s: string) => void;
-  additionalContext: string;
-  setAdditionalContext: (s: string) => void;
-  summarizedSentence: string;
-  setSummarizedSentence: (s: string) => void;
-  clear: () => void;
-};
+// type StateType = {
+//   modelId: string;
+//   setModelId: (c: string) => void;
+//   sentence: string;
+//   setSentence: (s: string) => void;
+//   additionalContext: string;
+//   setAdditionalContext: (s: string) => void;
+//   summarizedSentence: string;
+//   setSummarizedSentence: (s: string) => void;
+//   clear: () => void;
+// };
 
-const useDocumentPageState = create<StateType>((set) => {
-  const INIT_STATE = {
-    modelId: '',
-    sentence: '',
-    additionalContext: '',
-    summarizedSentence: '',
-  };
-  return {
-    ...INIT_STATE,
-    setModelId: (s: string) => {
-      set(() => ({
-        modelId: s,
-      }));
-    },
-    setSentence: (s: string) => {
-      set(() => ({
-        sentence: s,
-      }));
-    },
-    setAdditionalContext: (s: string) => {
-      set(() => ({
-        additionalContext: s,
-      }));
-    },
-    setSummarizedSentence: (s: string) => {
-      set(() => ({
-        summarizedSentence: s,
-      }));
-    },
-    clear: () => {
-      set(INIT_STATE);
-    },
-  };
-});
+// const useDocumentPageState = create<StateType>((set) => {
+//   const INIT_STATE = {
+//     modelId: '',
+//     sentence: '',
+//     additionalContext: '',
+//     summarizedSentence: '',
+//   };
+//   return {
+//     ...INIT_STATE,
+//     setModelId: (s: string) => {
+//       set(() => ({
+//         modelId: s,
+//       }));
+//     },
+//     setSentence: (s: string) => {
+//       set(() => ({
+//         sentence: s,
+//       }));
+//     },
+//     setAdditionalContext: (s: string) => {
+//       set(() => ({
+//         additionalContext: s,
+//       }));
+//     },
+//     setSummarizedSentence: (s: string) => {
+//       set(() => ({
+//         summarizedSentence: s,
+//       }));
+//     },
+//     clear: () => {
+//       set(INIT_STATE);
+//     },
+//   };
+// });
 
 const DocumentPage: React.FC = () => {
 
@@ -81,7 +81,7 @@ const DocumentPage: React.FC = () => {
 
     if (!files || files.length === 0) return;
 
-    let file: File = files[0];
+    const file: File = files[0];
     console.log(file);
     try {
       await uploadFile(file);
@@ -89,6 +89,7 @@ const DocumentPage: React.FC = () => {
       // refresh page
       gotoDir(documentList[0]?.dirPath);
     } catch (e) {
+      console.log(e)
     } finally {
       // clear files
       e.dataTransfer.clearData();
@@ -96,15 +97,17 @@ const DocumentPage: React.FC = () => {
   };
 
   // ========== click upload ==========
-  const onClickUploadBtn = (e: React.MouseEvent<HTMLInputElement>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onClickUploadBtn = (_e: React.MouseEvent<HTMLInputElement>) => {
     refFile.current?.click()
   };
+
 
   const onChangeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    let file: File = files[0];
+    const file: File = files[0];
     console.log(file);
     try {
       await uploadFile(file);
@@ -112,6 +115,7 @@ const DocumentPage: React.FC = () => {
       // refresh page
       gotoDir(documentList[0]?.dirPath);
     } catch (e) {
+      console.log(e)
     } finally {
       // clear files
       e.target.value = '';
@@ -120,29 +124,32 @@ const DocumentPage: React.FC = () => {
 
   // ========== check and delete ==========
   // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
-  const onChangeCheck = (checked?: boolean, data?: Object) => {
+  const onChangeCheck = (checked?: boolean, data?: any) => {
     data.checked = checked;
     console.log('333', checked, data);
 
     // Check the checked status of checkbox
-    let flag = documentList.some((item, i) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const flag = documentList.some((item: any, _i: number) => {
       return item.checked;
     });
     setBtnVisible(flag);
   };
 
-  const onClickDelete = (e: React.MouseEvent<HTMLInputElement>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onClickDelete = (_e: React.MouseEvent<Element>) => {
     console.log(222);
     setOpenDialog(true);
   };
 
-  const onDeleteExec = (e: React.MouseEvent<HTMLInputElement>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onDeleteExec = (_e: React.MouseEvent<Element>) => {
     console.log(111);
     setOpenDialog(false);
   };
 
   // ========== click dir ==========
-  const onClickDir = (e: React.MouseEvent<HTMLInputElement>, dirPath: String) => {
+  const onClickDir = (e: React.MouseEvent<Element>, dirPath: string) => {
     console.log('go to dir:', dirPath);
     e.preventDefault();
     gotoDir(dirPath);
@@ -211,11 +218,11 @@ const DocumentPage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
             </svg>
             <span>/</span>
-            {dirList?.map((dir: Object, i: Number) => {
+            {dirList?.map((dir: any, i: number) => {
               return (
                 <>
                   {
-                    dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: MouseEvent) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)
+                    dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)
                   }
                   {
                     !dir.dirPath && (<a key={'dirname_' + i} className="mx-1 hover:text-blue-700">{dir.name}</a>)
@@ -229,11 +236,11 @@ const DocumentPage: React.FC = () => {
           <Card>
             <table className="w-full">
               <tbody>
-                {documentList?.map((data: Object, index: Number) => {
+                {documentList?.map((data: any, index: number) => {
                   return (
                     <tr key={'tr_' + index}>
                       <td className="w-8">
-                        {data.type !== 2 && (<Checkbox onChange={(e, checked) => { onChangeCheck(checked, data) }}></Checkbox>)}
+                        {data.type !== 2 && (<Checkbox onChange={(_e, checked) => { onChangeCheck(checked, data) }}></Checkbox>)}
                       </td>
                       <td className="w-8">
                         {data.type !== 1 && (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -247,7 +254,7 @@ const DocumentPage: React.FC = () => {
                       <td className="py-2">
                         {
                           data.type === 0 && (
-                            <a href={`${data.dirPath}/${data.name}`} className="text-sky-600" onClick={(e: MouseEvent) => { onClickDir(e, `${data.dirPath}/${data.name}`) }}>{data.name}</a>
+                            <a href={`${data.dirPath}/${data.name}`} className="text-sky-600" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, `${data.dirPath}/${data.name}`) }}>{data.name}</a>
                           )
                         }
                         {
@@ -257,7 +264,7 @@ const DocumentPage: React.FC = () => {
                         }
                         {
                           data.type === 2 && (
-                            <a href={data.dirPath} className="text-sky-600" onClick={(e: MouseEvent) => { onClickDir(e, `${data.dirPath}/${data.name}`) }}>
+                            <a href={data.dirPath} className="text-sky-600" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, `${data.dirPath}/${data.name}`) }}>
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                               </svg>
