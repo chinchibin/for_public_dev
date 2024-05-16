@@ -20,6 +20,7 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
+import { S3Object } from 'generative-ai-use-cases-jp/src/s3';
 
 const TABLE_NAME: string = process.env.TABLE_NAME!;
 const dynamoDb = new DynamoDBClient({});
@@ -505,7 +506,7 @@ export const deleteShareId = async (_shareId: string): Promise<void> => {
 };
 
 
-export const listS3Bucket = async (prefix: string) => {
+export const listS3Bucket = async (prefix: string): Promise<S3Object[]> => {
   const command = new ListObjectsV2Command({
     Bucket: "my-bucket",
     // The default and maximum number of keys returned is 1000. This limits it to
@@ -517,7 +518,7 @@ export const listS3Bucket = async (prefix: string) => {
     let isTruncated = true;
 
     console.log("Your bucket contains the following objects:\n");
-    let contents = "";
+    let contents: any[] = [];
 
     while (isTruncated) {
       const { Contents, IsTruncated, NextContinuationToken } =
@@ -525,14 +526,21 @@ export const listS3Bucket = async (prefix: string) => {
       if (Contents == undefined){
         break
       }
+      
+      contents = Contents!.map((x) => {
+        return { key: x.Key!, lastModified: x.LastModified! };
+      });
 
-      const contentsList = Contents!.map((c) => ` • ${c.Key}`).join("\n");
-      contents += contentsList + "\n";
+
       isTruncated = IsTruncated ?? false;
       command.input.ContinuationToken = NextContinuationToken;
     }
     console.log(contents);
+
+    return contents as S3Object[]
+
   } catch (err) {
     console.error(err);
   }
+  
 };

@@ -12,6 +12,7 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { IdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Agent, AgentMap } from 'generative-ai-use-cases-jp';
@@ -21,6 +22,7 @@ export interface BackendApiProps {
   idPool: IdentityPool;
   table: Table;
   table2:Table;
+  s3: Bucket;
 }
 
 export class Api extends Construct {
@@ -35,7 +37,7 @@ export class Api extends Construct {
   constructor(scope: Construct, id: string, props: BackendApiProps) {
     super(scope, id);
 
-    const { userPool, table,table2, idPool } = props;
+    const { userPool, table,table2, idPool, s3 } = props;
 
     // region for bedrock / sagemaker
     const modelRegion = this.node.tryGetContext('modelRegion') || 'us-east-1';
@@ -251,6 +253,13 @@ export class Api extends Construct {
       },
     });
     table2.grantReadData(listPromptsFunction);
+
+    const listS3ObjectsFunction = new NodejsFunction(this, 'ListS3Objects', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/listS3Objects.ts',
+      timeout: Duration.minutes(15),
+    });
+    s3.grantRead(listS3ObjectsFunction);
 
 
     const updateChatTitleFunction = new NodejsFunction(

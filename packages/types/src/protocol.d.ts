@@ -8,6 +8,9 @@ import {
   ToBeRecordedPrompt,
   RecordedPrompt,
 } from './prompt';
+import{
+  S3Object
+} from './s3'
 
 import { Chat } from './chat';
 import {
@@ -43,6 +46,10 @@ export type CreatePromptsResponse = {
 
 export type ListPromptsResponse = {
   prompts: RecordedPrompt[];
+};
+
+export type ListS3ObjectsResponse = {
+  prompts: S3Object[];
 };
 
 export type UpdatePromptRequest = {
