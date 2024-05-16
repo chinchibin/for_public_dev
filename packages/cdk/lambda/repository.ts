@@ -9,6 +9,7 @@ import {
 } from 'generative-ai-use-cases-jp';
 import * as crypto from 'crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import {
   BatchWriteCommand,
   DeleteCommand,
@@ -23,6 +24,9 @@ import { v4 as uuidv4 } from 'uuid';
 const TABLE_NAME: string = process.env.TABLE_NAME!;
 const dynamoDb = new DynamoDBClient({});
 const dynamoDbDocument = DynamoDBDocumentClient.from(dynamoDb);
+
+const s3 = new S3Client({});
+
 
 export const createChat = async (_userId: string): Promise<Chat> => {
   const userId = `user#${_userId}`;
@@ -498,4 +502,37 @@ export const deleteShareId = async (_shareId: string): Promise<void> => {
       ],
     })
   );
+};
+
+
+export const listS3Bucket = async (prefix: string) => {
+  const command = new ListObjectsV2Command({
+    Bucket: "my-bucket",
+    // The default and maximum number of keys returned is 1000. This limits it to
+    // one for demonstration purposes.
+    MaxKeys: 1,
+  });
+
+  try {
+    let isTruncated = true;
+
+    console.log("Your bucket contains the following objects:\n");
+    let contents = "";
+
+    while (isTruncated) {
+      const { Contents, IsTruncated, NextContinuationToken } =
+        await s3.send(command);
+      if (Contents == undefined){
+        break
+      }
+
+      const contentsList = Contents!.map((c) => ` • ${c.Key}`).join("\n");
+      contents += contentsList + "\n";
+      isTruncated = IsTruncated ?? false;
+      command.input.ContinuationToken = NextContinuationToken;
+    }
+    console.log(contents);
+  } catch (err) {
+    console.error(err);
+  }
 };
