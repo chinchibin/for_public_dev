@@ -22,7 +22,6 @@ export interface BackendApiProps {
   idPool: IdentityPool;
   table: Table;
   table2:Table;
-  s3: Bucket;
 }
 
 export class Api extends Construct {
@@ -37,7 +36,7 @@ export class Api extends Construct {
   constructor(scope: Construct, id: string, props: BackendApiProps) {
     super(scope, id);
 
-    const { userPool, table,table2, idPool, s3 } = props;
+    const { userPool, table,table2, idPool } = props;
 
     // region for bedrock / sagemaker
     const modelRegion = this.node.tryGetContext('modelRegion') || 'us-east-1';
@@ -253,14 +252,6 @@ export class Api extends Construct {
       },
     });
     table2.grantReadData(listPromptsFunction);
-
-    const listS3ObjectsFunction = new NodejsFunction(this, 'ListS3Objects', {
-      runtime: Runtime.NODEJS_18_X,
-      entry: './lambda/listS3Objects.ts',
-      timeout: Duration.minutes(15),
-    });
-    s3.grantRead(listS3ObjectsFunction);
-
 
     const updateChatTitleFunction = new NodejsFunction(
       this,

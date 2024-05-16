@@ -13,6 +13,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { list } from '@material-tailwind/react';
 
 export interface RagProps {
   userPool: UserPool;
@@ -177,6 +178,16 @@ export class Rag extends Construct {
       })
     );
 
+    const listS3ObjectsFunction = new NodejsFunction(this, 'ListS3Objects', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/listS3Objects.ts',
+      timeout: Duration.minutes(15),
+    });
+
+    if (dataSourceBucket) {
+      dataSourceBucket.grantRead(listS3ObjectsFunction);
+    }
+
     const retrieveFunction = new NodejsFunction(this, 'Retrieve', {
       runtime: Runtime.NODEJS_18_X,
       entry: './lambda/retrieveKendra.ts',
@@ -227,6 +238,14 @@ export class Rag extends Construct {
     queryResource.addMethod(
       'POST',
       new LambdaIntegration(queryFunction),
+      commonAuthorizerProps
+    );
+
+    const listS3ObjectsResource = ragResource.addResource('query');
+    // POST: /rag/listS3Objects
+    listS3ObjectsResource.addMethod(
+      'POST',
+      new LambdaIntegration(listS3ObjectsFunction),
       commonAuthorizerProps
     );
 
