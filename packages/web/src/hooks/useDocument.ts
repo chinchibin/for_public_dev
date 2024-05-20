@@ -2,9 +2,7 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import useFileApi from './useFileApi';
-import useHttp from '../hooks/useHttp';
-
-//let testIdx = 0;
+import userDocumentApi from './useDocumentApi';
 
 const useDocumentState = create<{
   documentList: {
@@ -25,6 +23,9 @@ const useDocumentState = create<{
 }>((set) => {
 
   const api = useFileApi();
+  const {
+    listS3Objects,
+  } = userDocumentApi();
 
   const updateDocumentList = (list: any[]) => {
     set((_state) => {
@@ -99,7 +100,7 @@ const useDocumentState = create<{
         //   loading: false,
         // }));
       });
-    
+
 
   };
 
@@ -107,7 +108,6 @@ const useDocumentState = create<{
     dirList: [],
     documentList: [],
     getData: async (_dirPath?: string) => {
-      const http = useHttp();
       let list: any[] = [];
 
       try {
@@ -115,8 +115,8 @@ const useDocumentState = create<{
 
         // --------------- mock data start ---------------
         // await new Promise(resolve => setTimeout(resolve, 200));
-        const res = await http.post('http://localhost:5173/mock/getDocument.json', {});
-        const  {result, data}  = res.data;
+        const res = await listS3Objects();
+        const { result, data } = res;
 
         if (result === '200') list = data;
 
@@ -144,7 +144,7 @@ const useDocumentState = create<{
         console.log(list)
       }
 
-      
+
 
       // add prev folder
       if (list.length > 0 && list[0].dirPath) {
