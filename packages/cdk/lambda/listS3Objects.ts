@@ -1,14 +1,13 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { listS3Bucket } from './repository';
+import { ListS3ObjectsRequest } from 'generative-ai-use-cases-jp';
 
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const userId: string =
-      event.requestContext.authorizer!.claims['cognito:username'];
-    const prefix = event.pathParameters!.prefix!;
-    const prompts = await listS3Bucket(prefix);
+    const req: ListS3ObjectsRequest = JSON.parse(event.body!);    
+    const prompts = await listS3Bucket(req.prompts.prefix);
 
     return {
       statusCode: 200,

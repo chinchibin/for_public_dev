@@ -241,7 +241,7 @@ export class Rag extends Construct {
       commonAuthorizerProps
     );
 
-    const listS3ObjectsResource = ragResource.addResource('listS3Object');
+    const listS3ObjectsResource = ragResource.addResource('listS3Objects');
     // POST: /rag/listS3Objects
     listS3ObjectsResource.addMethod(
       'POST',
