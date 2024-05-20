@@ -1,32 +1,23 @@
 {
     "result": "200",
-    "data": [
+    "prompts": [
         {
-            "id": "1",
-            "type": 0,
-            "name": "設計書履歴",
-            "updateTime": "数秒前",
-            "size": "",
-            "dirPath": "/MSS/1_設計書/2_テスト資料",
-            "desc": ""
+            "type": "Folder",
+            "key": "docs/dev/設計書履歴",
+            "lastModified": "2024-05-16T12:34:56Z",
+            "size": ""
         },
         {
-            "id": "2",
-            "type": 1,
-            "name": "エビデンス_20240422.xlsx",
-            "updateTime": "1分前",
-            "size": "1,234 MB",
-            "dirPath": "/MSS/1_設計書/2_テスト資料",
-            "desc": ""
+            "type": "File",
+            "key": "docs/dev/エビデンス_20240422.xlsx",
+            "lastModified": "2024-05-16T12:34:56Z",
+            "size": "1,234 MB"
         },
         {
-            "id": "3",
-            "type": 1,
-            "name": "設計書_20240420.doc",
-            "updateTime": "10分前",
-            "size": "5,234 MB",
-            "dirPath": "/MSS/1_設計書/2_テスト資料",
-            "desc": ""
+            "type": "File",
+            "key": "docs/dev/設計書_20240420.doc",
+            "lastModified": "2024-05-16T12:34:56Z",
+            "size": "5,234 MB"
         }
     ]
 }

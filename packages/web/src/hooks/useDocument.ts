@@ -115,10 +115,26 @@ const useDocumentState = create<{
 
         // --------------- mock data start ---------------
         // await new Promise(resolve => setTimeout(resolve, 200));
-        const res = await listS3Objects();
-        const { result, data } = res;
+        const res = await listS3Objects(_dirPath || '');
+        const { prompts } = res;
 
-        if (result === '200') list = data;
+        list = prompts || [];
+        list = list.map((item) => {
+          let { key, size, type } = item;
+          let dirArr = key.split('/');
+          let name = dirArr.pop();
+
+          let updateTime = item.lastModified.replace(/T/gmi, ' ').replace(/Z$/gmi, '');
+
+          let ftype = 0; // folder
+          if (type.toLowerCase() === 'file') ftype === 1;
+
+          return {
+            updateTime, name, size,
+            type: ftype,
+            dirPath: dirArr.join('/')
+          };
+        });
 
         // let foramtPath = dirPath?.replace(/\/+$/g, '');
         // for (let i = 0; i < 4; i++) {
@@ -133,7 +149,6 @@ const useDocumentState = create<{
         //   });
         //   testIdx++;
         // }
-        console.log(list);
 
         // --------------- mock data end ---------------
 
@@ -144,8 +159,6 @@ const useDocumentState = create<{
         console.log(list)
       }
 
-
-
       // add prev folder
       if (list.length > 0 && list[0].dirPath) {
         const arr = list[0].dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
@@ -153,7 +166,6 @@ const useDocumentState = create<{
         const prevPath = '/' + arr.join('/'); //  /MSS/1_設計書
         list.unshift(
           {
-            id: '0',
             type: 2,   // 0-folder, 1-file,  2-prev folder
             name: '',
             updateTime: '-',
