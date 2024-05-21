@@ -61,7 +61,7 @@ const DocumentPage: React.FC = () => {
 
   // const { state } = useLocation() as Location<EditorialPageLocationState>;
   const { pathname } = useLocation();
-  const { documentList, gotoDir, dirList, uploadFile } = useDocument(pathname);
+  const { documentList, gotoDir, dirList, uploadFile } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [delBtnVisible, setBtnVisible] = useState(false);

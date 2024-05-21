@@ -183,7 +183,7 @@ const useDocumentState = create<{
   };
 });
 
-const useDocument = (id: string) => {
+const useDocument = () => {
   const {
     documentList,
     dirList,
@@ -192,8 +192,8 @@ const useDocument = (id: string) => {
   } = useDocumentState();
 
   useEffect(() => {
-    getData(id);
-  }, [id, getData]);
+    getData('');
+  }, [getData]);
 
   return {
     documentList,
