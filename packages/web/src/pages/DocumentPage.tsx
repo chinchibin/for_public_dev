@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 //import { create } from 'zustand';
 //import useTyping from '../hooks/useTyping';
 //import { MODELS } from '../hooks/useModel';
@@ -60,7 +60,7 @@ import { Checkbox } from '@fluentui/react'; // import  Checkbox  from '../compon
 const DocumentPage: React.FC = () => {
 
   // const { state } = useLocation() as Location<EditorialPageLocationState>;
-  const { pathname } = useLocation();
+  // const { pathname } = useLocation();
   const { documentList, gotoDir, dirList, uploadFile } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
