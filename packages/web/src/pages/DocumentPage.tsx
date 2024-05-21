@@ -126,7 +126,7 @@ const DocumentPage: React.FC = () => {
   // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
   const onChangeCheck = (checked?: boolean, data?: any) => {
     data.checked = checked;
-    console.log('333', checked, data);
+    console.log('333', checked, documentList);
 
     // Check the checked status of checkbox
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -138,7 +138,6 @@ const DocumentPage: React.FC = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onClickDelete = (_e: React.MouseEvent<Element>) => {
-    console.log(222);
     setOpenDialog(true);
   };
 
@@ -150,7 +149,7 @@ const DocumentPage: React.FC = () => {
 
   // ========== click dir ==========
   const onClickDir = (e: React.MouseEvent<Element>, dirPath: string) => {
-    console.log('go to dir:', dirPath);
+    // console.log('go to dir:', dirPath);
     e.preventDefault();
     gotoDir(dirPath);
   };

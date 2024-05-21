@@ -108,59 +108,45 @@ const useDocumentState = create<{
     dirList: [],
     documentList: [],
     getData: async (_dirPath?: string) => {
+      _dirPath = _dirPath?.replace(/(^\/)|(\/$)/gmi, '');
       let list: any[] = [];
+      const defaultDir = 'docs';
 
       try {
-        // get data by dirPath. dirPath default is ''
-
-        // --------------- mock data start ---------------
-        // await new Promise(resolve => setTimeout(resolve, 200));
-        const res = await listS3Objects(_dirPath || '');
+        // get data by dirPath. dirPath default is 'docs'
+        const res = await listS3Objects(_dirPath || defaultDir);
         const { prompts } = res;
 
         list = prompts || [];
         list = list.map((item) => {
           let { key, size, type } = item;
-          let dirArr = key.split('/');
+          let dirArr = key.replace(/\/$/, '').split('/');
           let name = dirArr.pop();
 
-          let updateTime = item.lastModified.replace(/T/gmi, ' ').replace(/Z$/gmi, '');
+          let updateTime = item.lastModified.replace(/T/gmi, ' ').replace(/Z$/gmi, '').replace(/.\d{3}$/, '');
+          let fsize = '';
+          if (size) {
+            fsize = Number((size / 1024 / 1024).toFixed(2)).toLocaleString("en-US") + 'MB'
+          }
 
           let ftype = 0; // folder
-          if (type.toLowerCase() === 'file') ftype === 1;
-
+          if (type.toLowerCase() === 'file') ftype = 1;
+          
           return {
-            updateTime, name, size,
+            updateTime, name, size: fsize,
             type: ftype,
             dirPath: dirArr.join('/')
           };
         });
-
-        // let foramtPath = dirPath?.replace(/\/+$/g, '');
-        // for (let i = 0; i < 4; i++) {
-        //   list.push({
-        //     id: i.toString(),
-        //     type: i === 0 ? 0 : 1,   // 0-folder, 1-file
-        //     name: i === 0 ? '設計書履歴_' + testIdx : 'ファイル_' + testIdx,
-        //     updateTime: '数秒前',
-        //     size: '',
-        //     dirPath: foramtPath || '',
-        //     desc: '',
-        //   });
-        //   testIdx++;
-        // }
-
-        // --------------- mock data end ---------------
-
       } catch (e) {
         console.log(e);
         list = [];
       } finally {
-        console.log(list)
+        // console.log(list)
       }
 
       // add prev folder
-      if (list.length > 0 && list[0].dirPath) {
+      if (list.length > 0 && list[0].dirPath !== defaultDir) {
         const arr = list[0].dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
         arr?.pop(); // [ MSS, 1_設計書 ]
         const prevPath = '/' + arr.join('/'); //  /MSS/1_設計書
