@@ -76,6 +76,13 @@ const DocumentPage: React.FC = () => {
 
   const refFile = useRef<HTMLInputElement>(null);
 
+  const getCurPath = () => {
+    let curPath = dirList.map((item) => {
+      return item.name;
+    });
+    return curPath.join('/');
+  };
+
   // ========== drop upload ==========
   // const onClickExec = useCallback(() => {
   //   if (loading) return;
@@ -90,10 +97,12 @@ const DocumentPage: React.FC = () => {
 
     const file: File = files[0];
     console.log(file);
+
     try {
-      await uploadFile(file);
+      await uploadFile(file, getCurPath())
       // refresh page
-      gotoDir(documentList[0]?.dirPath);
+      // gotoDir(documentList[0]?.dirPath);
+      gotoDir(getCurPath());
     } catch (e) {
       console.log(e)
     } finally {
@@ -114,10 +123,11 @@ const DocumentPage: React.FC = () => {
 
     const file: File = files[0];
     console.log(file);
+
     try {
-      await uploadFile(file);
+      await uploadFile(file, getCurPath())
       // refresh page
-      gotoDir(documentList[0]?.dirPath);
+      gotoDir(getCurPath());
     } catch (e) {
       console.log(e)
     } finally {

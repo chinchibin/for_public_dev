@@ -22,7 +22,7 @@ const useDocumentState = create<{
   reloadData: (dirPath: string) => void;
   getData: (dirPath: string) => void;
   deleteData: (dirPath: string) => void;
-  uploadFile: (file: File) => Promise<void>;
+  uploadFile: (file: File, dirPath: string) => Promise<void>;
 }>((set) => {
 
   // const api = useFileApi();
@@ -151,10 +151,10 @@ const useDocumentState = create<{
       updateDirList(list);
     },
     // ファイルのアップロード
-    uploadFile: async (file: File) => {
+    uploadFile: async (file: File, dirPath: string) => {
       showLoading();
       try {
-        let res = await uploadFile(file);
+        let res = await uploadFile(file, dirPath);
         console.log(res);
       } catch (e) {
 

@@ -11,6 +11,20 @@ const useDocumentApi = () => {
 
   const http = useHttp();
 
+  const fileToBase64 = (file: File): any => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          resolve && resolve(reader.result);
+        });
+        reader.readAsDataURL(file);
+      } catch (e) {
+        reject && reject();
+      }
+    });
+  }
+
   return {
     listS3Objects: async (dirPath: string): Promise<ListS3ObjectsResponse> => {
       const res = await http.post('rag/listS3Objects', { prompts: { prefix: dirPath } });
@@ -28,9 +42,11 @@ const useDocumentApi = () => {
       return res.data;
     },
 
-    uploadFile: async (file: File) => {
+    uploadFile: async (file: File, dirPath: string) => {
+      let fileBase64: string = await fileToBase64(file);
       const formData = new FormData()
-      formData.append('data', file);
+      formData.append('data', fileBase64);
+      formData.append('name', dirPath + '/' + file.name);
       const res = await http.post('rag/uploadFiles', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       return res.data;
     },
