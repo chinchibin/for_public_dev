@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import userDocumentApi from './useDocumentApi';
 
 const useDocumentState = create<{
+  loading: boolean;
   documentList: {
     id: string,
     type: number,   // 0-folder, 1-file
@@ -17,16 +18,31 @@ const useDocumentState = create<{
   dirList: {
     name: string, // current folder's name
     dirPath: string, // current folder's absolute path
-  }[],
+  }[];
+  reloadData: (dirPath: string) => void;
   getData: (dirPath: string) => void;
+  deleteData: (dirPath: string) => void;
   uploadFile: (file: File) => Promise<void>;
 }>((set) => {
 
   // const api = useFileApi();
   const {
     listS3Objects,
-    uploadFile
+    uploadFile,
+    deleteS3Objects,
+    reloadS3Objects
   } = userDocumentApi();
+
+  const showLoading = () => {
+    set(() => ({
+      loading: true,
+    }));
+  };
+  const hideLoading = () => {
+    set(() => ({
+      loading: false,
+    }));
+  };
 
   const updateDocumentList = (list: any[]) => {
     set((_state) => {
@@ -72,18 +88,8 @@ const useDocumentState = create<{
     });
   };
 
-  const uploadFileFn = async (file: File) => {
-    // set(() => ({
-    //   loading: true,
-    //   recognizedText: '',
-    // }));
-
-    // ファイルのアップロード
-    let res = await uploadFile(file);
-    console.log(res);
-  };
-
   return {
+    loading: false,
     dirList: [],
     documentList: [],
     getData: async (_dirPath?: string) => {
@@ -110,7 +116,7 @@ const useDocumentState = create<{
 
           let ftype = 0; // folder
           if (type.toLowerCase() === 'file') ftype = 1;
-          
+
           return {
             updateTime, name, size: fsize,
             type: ftype,
@@ -144,16 +150,52 @@ const useDocumentState = create<{
       updateDocumentList(list);
       updateDirList(list);
     },
-    uploadFile: uploadFileFn,
+    // ファイルのアップロード
+    uploadFile: async (file: File) => {
+      showLoading();
+      try {
+        let res = await uploadFile(file);
+        console.log(res);
+      } catch (e) {
+
+      } finally {
+        hideLoading();
+      }
+    },
+    deleteData: async (filePath: string) => {
+      showLoading();
+      try {
+        let res = await deleteS3Objects(filePath);
+        console.log(res);
+      } catch (e) {
+
+      } finally {
+        hideLoading();
+      }
+    },
+    reloadData: async (dirPath: string) => {
+      showLoading();
+      try {
+        let res = await reloadS3Objects(dirPath);
+        console.log(res);
+      } catch (e) {
+
+      } finally {
+        hideLoading();
+      }
+    },
   };
 });
 
 const useDocument = () => {
   const {
+    loading,
     documentList,
     dirList,
     getData,
-    uploadFile
+    uploadFile,
+    deleteData,
+    reloadData
   } = useDocumentState();
 
   useEffect(() => {
@@ -161,10 +203,13 @@ const useDocument = () => {
   }, [getData]);
 
   return {
+    loading,
     documentList,
     dirList,
     gotoDir: getData,
     uploadFile,
+    deleteData,
+    reloadData
   };
 };
 export default useDocument;

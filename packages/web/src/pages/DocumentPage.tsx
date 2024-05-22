@@ -62,7 +62,13 @@ const DocumentPage: React.FC = () => {
 
   // const { state } = useLocation() as Location<EditorialPageLocationState>;
   // const { pathname } = useLocation();
-  const { documentList, gotoDir, dirList, uploadFile } = useDocument();
+  const {
+    loading, documentList, dirList,
+    gotoDir,
+    uploadFile,
+    deleteData,
+    reloadData
+  } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [openReloadDialog, setOpenReloadDialog] = useState(false);
@@ -79,7 +85,6 @@ const DocumentPage: React.FC = () => {
   const onDropFile = async (e: React.DragEvent<HTMLInputElement>) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
-    console.log(files.length);
 
     if (!files || files.length === 0) return;
 
@@ -87,7 +92,6 @@ const DocumentPage: React.FC = () => {
     console.log(file);
     try {
       await uploadFile(file);
-
       // refresh page
       gotoDir(documentList[0]?.dirPath);
     } catch (e) {
@@ -104,7 +108,6 @@ const DocumentPage: React.FC = () => {
     refFile.current?.click()
   };
 
-
   const onChangeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -113,7 +116,6 @@ const DocumentPage: React.FC = () => {
     console.log(file);
     try {
       await uploadFile(file);
-
       // refresh page
       gotoDir(documentList[0]?.dirPath);
     } catch (e) {
@@ -122,16 +124,6 @@ const DocumentPage: React.FC = () => {
       // clear files
       e.target.value = '';
     }
-  };
-
-  const onClickReloadBtn = async (e: React.MouseEvent<HTMLInputElement>) => {
-    setOpenReloadDialog(true);
-    console.log(e);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onReloadExec = (_e: React.MouseEvent<Element>) => {
-    setOpenReloadDialog(false);
   };
 
   // ========== check and delete ==========
@@ -153,15 +145,16 @@ const DocumentPage: React.FC = () => {
     setOpenDialog(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onDeleteExec = (_e: React.MouseEvent<Element>) => {
-    console.log(111);
-    setOpenDialog(false);
+  const onDeleteExec = async () => {
+    try {
+      await deleteData('');
+      setOpenDialog(false);
+    } catch (e) {
+
+    } finally {
+
+    }
   };
-
-
-
-
 
   // ========== click dir ==========
   const onClickDir = (e: React.MouseEvent<Element>, dirPath: string) => {
@@ -170,13 +163,31 @@ const DocumentPage: React.FC = () => {
     gotoDir(dirPath);
   };
 
+  // ========== reload ==========
+  const onClickReloadBtn = async (_e: React.MouseEvent<HTMLInputElement>) => {
+    setOpenReloadDialog(true);
+  };
+
+  const onReloadExec = async () => {
+    try {
+      await reloadData('');
+      setOpenReloadDialog(false);
+    } catch (e) {
+
+    } finally {
+
+    }
+  };
+
+
   return (
     <>
-      {false && <div className="grid grid-cols-1 justify-items-center gap-4">
-        <Text className="mt-12 text-center">Loading...</Text>
-        <Loader width="5rem" height="5rem" />
+      {loading && <div className="fixed w-full h-full z-10" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
+        <div className="grid grid-cols-1 justify-items-center gap-4">
+          <Text className="mt-12 text-center">Loading...</Text>
+          <Loader width="5rem" height="5rem" />
+        </div>
       </div>}
-
 
       <ModalDialog
         isOpen={openDialog}
@@ -187,13 +198,12 @@ const DocumentPage: React.FC = () => {
         <div>
           選択している項目を削除してもよろしいでしょうか？
         </div>
-
         <div className="mt-4 flex justify-end gap-2">
           <Button outlined onClick={() => { setOpenDialog(false); }} className="p-2">
             Cancel
           </Button>
           <Button
-            onClick={() => { onDeleteExec }}
+            onClick={onDeleteExec}
             className="bg-red-500 p-2 text-white">
             削除
           </Button>
@@ -216,7 +226,7 @@ const DocumentPage: React.FC = () => {
             Cancel
           </Button>
           <Button
-            onClick={() => { onReloadExec }}
+            onClick={onReloadExec}
             className="bg-red-500 p-2 text-white">
             OK
           </Button>

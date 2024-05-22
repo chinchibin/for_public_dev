@@ -18,11 +18,26 @@ const useDocumentApi = () => {
       return res.data;
     },
 
-    uploadFile: (file: File) => {
+    deleteS3Objects: async (dirPath: string) => {
+      const res = await http.post('rag/deleteS3Objects', { prompts: { prefix: dirPath } });
+      return res.data;
+    },
+
+    reloadS3Objects: async (dirPath: string) => {
+      const res = await http.post('rag/reloadS3Objects', { prompts: { prefix: dirPath } });
+      return res.data;
+    },
+
+    uploadFile: async (file: File) => {
+      const res = await http.post('rag/uploadFiles', { data: file }, { headers: { 'Content-Type': 'file/*' } });
+      return res.data;
+    },
+
+    uploadFile1: async (file: File) => {
       return axios({
         method: 'PUT',
-        url: BASEURL + 'uploadFiles',
-        headers: { 'Content-Type': 'file/*' },
+        url: BASEURL + 'rag/uploadFiles',
+        headers: { 'Content-Type': 'file/*' }, // 'multipart/form-data'
         data: file,
       });
     },

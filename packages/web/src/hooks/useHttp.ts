@@ -14,7 +14,7 @@ api.interceptors.request.use(async (config) => {
     const token = (await Auth.currentSession()).getIdToken().getJwtToken();
     config.headers['Authorization'] = token;
   }
-  config.headers['Content-Type'] = 'application/json';
+  config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json';
 
   return config;
 });
@@ -59,6 +59,7 @@ const useHttp = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       errorProcess?: (err: any) => void
     ) => {
+      console.log(reqConfig)
       return new Promise<AxiosResponse<RES>>((resolve, reject) => {
         api
           .post<RES, AxiosResponse<RES>, DATA>(url, data, reqConfig)
