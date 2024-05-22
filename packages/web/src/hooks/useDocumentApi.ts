@@ -47,7 +47,7 @@ const useDocumentApi = () => {
       const formData = new FormData()
       formData.append('data', fileBase64);
       formData.append('name', dirPath + '/' + file.name);
-      const res = await http.post('rag/uploadFiles', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await http.post('rag/uploadFiles', formData); // { headers: { 'Content-Type': 'multipart/form-data' } }
       return res.data;
     },
 
