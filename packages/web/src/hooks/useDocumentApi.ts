@@ -29,16 +29,20 @@ const useDocumentApi = () => {
     },
 
     uploadFile: async (file: File) => {
-      const res = await http.post('rag/uploadFiles', { data: file }, { headers: { 'Content-Type': 'file/*' } });
+      const formData = new FormData()
+      formData.append('data', file);
+      const res = await http.post('rag/uploadFiles', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       return res.data;
     },
 
     uploadFile1: async (file: File) => {
+      const formData = new FormData()
+      formData.append('data', file);
       return axios({
         method: 'PUT',
         url: BASEURL + 'rag/uploadFiles',
-        headers: { 'Content-Type': 'file/*' }, // 'multipart/form-data'
-        data: file,
+        headers: { 'Content-Type': 'multipart/form-data' }, // 'multipart/form-data'
+        data: formData,
       });
     },
   }

@@ -59,7 +59,6 @@ const useHttp = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       errorProcess?: (err: any) => void
     ) => {
-      console.log(reqConfig)
       return new Promise<AxiosResponse<RES>>((resolve, reject) => {
         api
           .post<RES, AxiosResponse<RES>, DATA>(url, data, reqConfig)
