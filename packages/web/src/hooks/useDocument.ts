@@ -1,7 +1,7 @@
 //import { produce } from 'immer';
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import useFileApi from './useFileApi';
+// import useFileApi from './useFileApi';
 import userDocumentApi from './useDocumentApi';
 
 const useDocumentState = create<{
@@ -22,9 +22,10 @@ const useDocumentState = create<{
   uploadFile: (file: File) => Promise<void>;
 }>((set) => {
 
-  const api = useFileApi();
+  // const api = useFileApi();
   const {
     listS3Objects,
+    uploadFile
   } = userDocumentApi();
 
   const updateDocumentList = (list: any[]) => {
@@ -71,37 +72,15 @@ const useDocumentState = create<{
     });
   };
 
-  const uploadFile = async (file: File) => {
+  const uploadFileFn = async (file: File) => {
     // set(() => ({
     //   loading: true,
     //   recognizedText: '',
     // }));
 
-    const mediaFormat = file?.name.split('.').pop() as string;
-
-    // 署名付き URL の取得
-    const signedUrlRes = await api.getSignedUrl({
-      mediaFormat: mediaFormat,
-    });
-    const signedUrl = signedUrlRes.data;
-    const fileUrl = signedUrl.split(/[?#]/)[0]; // 署名付き url からクエリパラメータを除外
-
     // ファイルのアップロード
-    await api.uploadFile(signedUrl, { file: file });
-
-    // ファイル認識
-    //const res = 
-    await api
-      .recognizeFile({
-        fileUrl: fileUrl,
-      })
-      .finally(() => {
-        // set(() => ({
-        //   loading: false,
-        // }));
-      });
-
-
+    let res = await uploadFile(file);
+    console.log(res);
   };
 
   return {
@@ -165,7 +144,7 @@ const useDocumentState = create<{
       updateDocumentList(list);
       updateDirList(list);
     },
-    uploadFile,
+    uploadFile: uploadFileFn,
   };
 });
 

@@ -8,6 +8,7 @@ import useDocument from '../hooks/useDocument';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import ModalDialog from '../components/ModalDialog';
+import { Text, Loader } from '@aws-amplify/ui-react';
 import { Checkbox } from '@fluentui/react'; // import  Checkbox  from '../components/Checkbox';
 
 // type StateType = {
@@ -64,6 +65,7 @@ const DocumentPage: React.FC = () => {
   const { documentList, gotoDir, dirList, uploadFile } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
+  const [openReloadDialog, setOpenReloadDialog] = useState(false);
   const [delBtnVisible, setBtnVisible] = useState(false);
 
   const refFile = useRef<HTMLInputElement>(null);
@@ -122,6 +124,16 @@ const DocumentPage: React.FC = () => {
     }
   };
 
+  const onClickReloadBtn = async (e: React.MouseEvent<HTMLInputElement>) => {
+    setOpenReloadDialog(true);
+    console.log(e);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onReloadExec = (_e: React.MouseEvent<Element>) => {
+    setOpenReloadDialog(false);
+  };
+
   // ========== check and delete ==========
   // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
   const onChangeCheck = (checked?: boolean, data?: any) => {
@@ -147,6 +159,10 @@ const DocumentPage: React.FC = () => {
     setOpenDialog(false);
   };
 
+
+
+
+
   // ========== click dir ==========
   const onClickDir = (e: React.MouseEvent<Element>, dirPath: string) => {
     // console.log('go to dir:', dirPath);
@@ -156,29 +172,56 @@ const DocumentPage: React.FC = () => {
 
   return (
     <>
-      {
-        <ModalDialog
-          isOpen={openDialog}
-          title="削除確認"
-          onClose={() => {
-            setOpenDialog(false);
-          }}>
-          <div>
-            選択している項目を削除してもよろしいでしょうか？
-          </div>
+      {false && <div className="grid grid-cols-1 justify-items-center gap-4">
+        <Text className="mt-12 text-center">Loading...</Text>
+        <Loader width="5rem" height="5rem" />
+      </div>}
 
-          <div className="mt-4 flex justify-end gap-2">
-            <Button outlined onClick={() => { setOpenDialog(false); }} className="p-2">
-              Cancel
-            </Button>
-            <Button
-              onClick={() => { onDeleteExec }}
-              className="bg-red-500 p-2 text-white">
-              削除
-            </Button>
-          </div>
-        </ModalDialog>
-      }
+
+      <ModalDialog
+        isOpen={openDialog}
+        title="削除確認"
+        onClose={() => {
+          setOpenDialog(false);
+        }}>
+        <div>
+          選択している項目を削除してもよろしいでしょうか？
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <Button outlined onClick={() => { setOpenDialog(false); }} className="p-2">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => { onDeleteExec }}
+            className="bg-red-500 p-2 text-white">
+            削除
+          </Button>
+        </div>
+      </ModalDialog>
+
+      <ModalDialog
+        isOpen={openReloadDialog}
+        title="同期確認"
+        onClose={() => {
+          setOpenReloadDialog(false);
+        }}>
+        <div>
+          ファイルを同期します。
+          <p>*この処理には5分程度かかります</p>
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <Button outlined onClick={() => { setOpenReloadDialog(false); }} className="p-2">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => { onReloadExec }}
+            className="bg-red-500 p-2 text-white">
+            OK
+          </Button>
+        </div>
+      </ModalDialog>
 
       <div className="grid grid-cols-12">
         <div className="invisible col-span-12 my-0 flex h-0 items-center justify-center text-xl font-semibold lg:visible lg:my-5 lg:h-min print:visible print:my-5 print:h-min">
@@ -198,9 +241,14 @@ const DocumentPage: React.FC = () => {
                 </svg>
               </span>
             )}
-            <span className="cursor-pointer select-none" onClick={onClickUploadBtn}>
+            <span className="cursor-pointer select-none mr-3" onClick={onClickUploadBtn}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+              </svg>
+            </span>
+            <span className="cursor-pointer select-none" onClick={onClickReloadBtn}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
             </span>
             <input
