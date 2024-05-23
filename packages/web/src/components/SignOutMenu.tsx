@@ -7,7 +7,7 @@ import Logout from '@mui/icons-material/Logout';
 import { useCallback } from 'react';
 import { Auth } from 'aws-amplify';
 
-export default function SignOutMenu({label}: {label: string}) {
+export default function SignOutMenu({ label }: { label: string }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -27,6 +27,10 @@ export default function SignOutMenu({label}: {label: string}) {
     setAnchorEl(null);
   };
 
+  const handleSkip = (path: string) => {
+    location.href = path;
+  }
+
   return (
     <div>
       <Button
@@ -35,7 +39,7 @@ export default function SignOutMenu({label}: {label: string}) {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        style={{textTransform: 'none'}}
+        style={{ textTransform: 'none' }}
       >
         {label}
       </Button>
@@ -54,11 +58,15 @@ export default function SignOutMenu({label}: {label: string}) {
           horizontal: 'left',
         }}
       >
+        <MenuItem onClick={() => { handleSkip('/document'); }}>
+          ドキュメント一覧
+        </MenuItem>
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
             <Logout fontSize="small" style={{ color: "var(--color-orange)" }} />
           </ListItemIcon>
-          Logout</MenuItem>
+          Logout
+        </MenuItem>
       </Menu>
     </div>
   );
