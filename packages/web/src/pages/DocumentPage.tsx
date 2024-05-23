@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // import { useLocation } from 'react-router-dom';
 //import { create } from 'zustand';
 //import useTyping from '../hooks/useTyping';
@@ -67,7 +67,8 @@ const DocumentPage: React.FC = () => {
     gotoDir,
     uploadFile,
     deleteData,
-    reloadData
+    reloadData,
+    updateChecked
   } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -75,6 +76,13 @@ const DocumentPage: React.FC = () => {
   const [delBtnVisible, setBtnVisible] = useState(false);
 
   const refFile = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const flag = documentList.some((item: any, _i: number) => {
+      return item.checked;
+    });
+    setBtnVisible(flag);
+  }, [documentList, setBtnVisible]);
 
   const getCurPath = () => {
     let curPath = dirList.map((item) => {
@@ -133,14 +141,15 @@ const DocumentPage: React.FC = () => {
 
   // ========== check and delete ==========
   // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
-  const onChangeCheck = (checked?: boolean, data?: any) => {
-    data.checked = checked;
+  const onChangeCheck = (checked: boolean, index: number) => {
+    // data.checked = checked;
+    updateChecked(index, checked);
     // Check the checked status of checkbox
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const flag = documentList.some((item: any, _i: number) => {
-      return item.checked;
-    });
-    setBtnVisible(flag);
+    // const flag = documentList.some((item: any, _i: number) => {
+    //   return item.checked;
+    // });
+    // setBtnVisible(flag);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -187,13 +196,6 @@ const DocumentPage: React.FC = () => {
 
   return (
     <>
-      {loading && <div className="fixed w-full h-full z-10" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
-        <div className="grid grid-cols-1 justify-items-center gap-4">
-          <Text className="mt-12 text-center">Loading...</Text>
-          <Loader width="5rem" height="5rem" />
-        </div>
-      </div>}
-
       <ModalDialog
         isOpen={openDialog}
         title="削除確認"
@@ -238,7 +240,14 @@ const DocumentPage: React.FC = () => {
         </div>
       </ModalDialog>
 
-      <div className="grid grid-cols-12">
+      <div className="grid grid-cols-12 relative">
+        {loading && <div className="absolute w-full h-full z-10 pt-20" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
+          <div className="grid grid-cols-1 justify-items-center gap-4">
+            <Text className="mt-12 text-center">Loading...</Text>
+            <Loader width="5rem" height="5rem" />
+          </div>
+        </div>}
+
         <div className="invisible col-span-12 my-0 flex h-0 items-center justify-center text-xl font-semibold lg:visible lg:my-5 lg:h-min print:visible print:my-5 print:h-min">
           ドキュメント一覧
         </div>
@@ -303,7 +312,7 @@ const DocumentPage: React.FC = () => {
                   return (
                     <tr key={'tr_' + index}>
                       <td className="w-8">
-                        {data.type === 1 && (<Checkbox onChange={(_e, checked) => { onChangeCheck(checked, data) }}></Checkbox>)}
+                        {data.type === 1 && (<Checkbox checked={data.checked} onChange={(_e, checked) => { onChangeCheck(checked || false, index) }}></Checkbox>)}
                       </td>
                       <td className="w-8">
                         {data.type !== 1 && (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

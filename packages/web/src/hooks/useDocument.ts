@@ -1,4 +1,4 @@
-//import { produce } from 'immer';
+import { produce } from 'immer';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 // import useFileApi from './useFileApi';
@@ -11,6 +11,7 @@ const useDocumentState = create<{
     type: number,   // 0-folder, 1-file
     key: string,
     name: string,
+    checked: boolean,
     updateTime: string,
     size: string,
     dirPath: string,
@@ -22,6 +23,7 @@ const useDocumentState = create<{
   }[];
   reloadData: () => void;
   getData: (dirPath: string) => void;
+  updateChecked: (i: number, chked: boolean) => void;
   deleteData: (delList: string[]) => void;
   uploadFile: (files: FileList, dirPath: string) => Promise<any>;
 }>((set) => {
@@ -196,6 +198,15 @@ const useDocumentState = create<{
         hideLoading();
       }
     },
+    updateChecked: (i: number, chked: boolean) => {
+      set((state) => {
+        return {
+          documentList: produce(state.documentList, (draft) => {
+            draft[i].checked = chked;
+          }),
+        };
+      });
+    },
   };
 });
 
@@ -207,7 +218,8 @@ const useDocument = () => {
     getData,
     uploadFile,
     deleteData,
-    reloadData
+    reloadData,
+    updateChecked,
   } = useDocumentState();
 
   useEffect(() => {
@@ -221,7 +233,8 @@ const useDocument = () => {
     gotoDir: getData,
     uploadFile,
     deleteData,
-    reloadData
+    reloadData,
+    updateChecked
   };
 };
 export default useDocument;
