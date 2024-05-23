@@ -9,7 +9,7 @@ import {
 } from 'generative-ai-use-cases-jp';
 import * as crypto from 'crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, PutObjectCommandInput, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
   BatchWriteCommand,
   DeleteCommand,
@@ -27,6 +27,7 @@ const dynamoDb = new DynamoDBClient({});
 const dynamoDbDocument = DynamoDBDocumentClient.from(dynamoDb);
 
 const s3 = new S3Client({});
+const bucketName = 'generativeaiusecasesstack-ragdatasourcebucket09187-no7y7ozm2zof';
 
 
 export const createChat = async (_userId: string): Promise<Chat> => {
@@ -508,29 +509,43 @@ export const deleteShareId = async (_shareId: string): Promise<void> => {
 
 export const listS3Bucket = async (prefix: string): Promise<S3Object[]> => {
   const command = new ListObjectsV2Command({
-    Bucket: "my-bucket",
+    Bucket: bucketName,
     // The default and maximum number of keys returned is 1000. This limits it to
     // one for demonstration purposes.
-    MaxKeys: 1,
+    Prefix: prefix + '/',
+    MaxKeys: 1000,
+    Delimiter: '/',
   });
 
   try {
     let isTruncated = true;
-
-    console.log("Your bucket contains the following objects:\n");
+   
     let contents: any[] = [];
 
     while (isTruncated) {
-      const { Contents, IsTruncated, NextContinuationToken } =
+      const { Contents, IsTruncated, NextContinuationToken, CommonPrefixes } =
         await s3.send(command);
-      if (Contents == undefined){
-        break
-      }
       
-      contents = Contents!.map((x) => {
-        return { key: x.Key!, lastModified: x.LastModified! };
-      });
+      console.log(Contents);
+      let files: any[] = []
+      if (Contents != undefined){
+        Contents!.forEach((x) => {
+          if (x.Key! !== prefix + '/'){
+            files.push({ key: x.Key!, type: 'File', lastModified: x.LastModified!, size: x.Size! });
+          }           
+        });
+      }     
+       
 
+      let folders: any[] = [];
+      if (CommonPrefixes != undefined){
+        CommonPrefixes!.forEach((x) =>{
+          folders.push({key: x.Prefix!, type: 'Folder', lastModified: '', size: ''});
+        });
+      }
+
+      contents = contents.concat(folders)
+      contents = contents.concat(files)
 
       isTruncated = IsTruncated ?? false;
       command.input.ContinuationToken = NextContinuationToken;
@@ -544,3 +559,19 @@ export const listS3Bucket = async (prefix: string): Promise<S3Object[]> => {
   }
   
 };
+
+
+export const uploadS3Object = async (key: string, file: any) => {
+    
+    // 作成するファイル情報
+    const putParams: PutObjectCommandInput = {
+      Bucket: bucketName,
+      Key: key,
+      Body: file,
+    }
+    
+    const putCommand = new PutObjectCommand(putParams);
+    await s3.send(putCommand);
+    
+
+}

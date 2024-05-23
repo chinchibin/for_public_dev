@@ -137,6 +137,10 @@ export type GetMediaUploadSignedUrlRequest = {
   mediaFormat: MediaFormat;
 };
 
+export type GetRagFileUploadSignedUrlRequest = {
+  fileName: string;
+};
+
 export type GetMediaUploadSignedUrlResponse = string;
 
 export type StartTranscriptionRequest = {

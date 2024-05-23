@@ -104,11 +104,11 @@ const useDocumentState = create<{
 
         list = prompts || [];
         list = list.map((item) => {
-          let { key, size, type } = item;
-          let dirArr = key.replace(/\/$/, '').split('/');
-          let name = dirArr.pop();
+          const { key, size, type } = item;
+          const dirArr = key.replace(/\/$/, '').split('/');
+          const name = dirArr.pop();
 
-          let updateTime = item.lastModified.replace(/T/gmi, ' ').replace(/Z$/gmi, '').replace(/.\d{3}$/, '');
+          const updateTime = item.lastModified.replace(/T/gmi, ' ').replace(/Z$/gmi, '').replace(/.\d{3}$/, '');
           let fsize = '';
           if (size) {
             fsize = Number((size / 1024 / 1024).toFixed(2)).toLocaleString("en-US") + 'MB'
@@ -154,10 +154,10 @@ const useDocumentState = create<{
     uploadFile: async (file: File, dirPath: string) => {
       showLoading();
       try {
-        let res = await uploadFile(file, dirPath);
+        const res = await uploadFile(file, dirPath);
         console.log(res);
       } catch (e) {
-
+        console.log(e)
       } finally {
         hideLoading();
       }
@@ -165,10 +165,10 @@ const useDocumentState = create<{
     deleteData: async (filePath: string) => {
       showLoading();
       try {
-        let res = await deleteS3Objects(filePath);
+        const res = await deleteS3Objects(filePath);
         console.log(res);
       } catch (e) {
-
+        console.log(e)
       } finally {
         hideLoading();
       }
@@ -176,10 +176,10 @@ const useDocumentState = create<{
     reloadData: async (dirPath: string) => {
       showLoading();
       try {
-        let res = await reloadS3Objects(dirPath);
+        const res = await reloadS3Objects(dirPath);
         console.log(res);
       } catch (e) {
-
+        console.log(e)
       } finally {
         hideLoading();
       }

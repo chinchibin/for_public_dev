@@ -1,14 +1,16 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { listS3Bucket } from './repository';
-import { ListS3ObjectsRequest } from 'generative-ai-use-cases-jp';
+import { uploadS3Object } from './repository';
+
 
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const req: ListS3ObjectsRequest = JSON.parse(event.body!);    
-    console.log('REQ:' + req);
-    const prompts = await listS3Bucket(req.prompts.prefix);
+
+    const body = event.body!;
+    console.log(event.isBase64Encoded)
+    console.log(file);
+    const prompts = await uploadS3Object(file.name, file.stream);
 
     return {
       statusCode: 200,
@@ -17,7 +19,7 @@ export const handler = async (
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
-        prompts,
+        result: 'OK',
       }),
     };
   } catch (error) {
@@ -32,3 +34,5 @@ export const handler = async (
     };
   }
 };
+
+

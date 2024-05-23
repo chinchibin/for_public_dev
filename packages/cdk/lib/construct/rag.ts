@@ -96,6 +96,14 @@ export class Rag extends Construct {
       kendraIndexArn = Token.asString(index.getAtt('Arn'));
       kendraIndexId = index.ref;
 
+      const corsRule = [{
+        allowedMethods: [s3.HttpMethods.PUT],
+        allowedOrigins: ['*'],
+      
+        allowedHeaders: ['*'],
+        exposedHeaders: [],
+      }];
+
       // .pdf や .txt などのドキュメントを格納する S3 Bucket
       dataSourceBucket = new s3.Bucket(this, 'DataSourceBucket', {
         blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -105,8 +113,9 @@ export class Rag extends Construct {
         objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
         serverAccessLogsPrefix: 'logs',
         enforceSSL: true,
+        cors: corsRule,
       });
-
+      
       // /kendra/docs ディレクトリを Bucket にアップロードする
       new s3Deploy.BucketDeployment(this, 'DeployDocs', {
         sources: [s3Deploy.Source.asset('./kendra-docs')],
@@ -188,6 +197,30 @@ export class Rag extends Construct {
       dataSourceBucket.grantRead(listS3ObjectsFunction);
     }
 
+    const uploadS3ObjectFunction = new NodejsFunction(this, 'uploadS3Object', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/uploadS3Object.ts',
+      timeout: Duration.minutes(15),
+    });
+
+    if (dataSourceBucket) {
+      dataSourceBucket.grantPut(uploadS3ObjectFunction);
+    }
+
+    // Lambda
+    const getSignedUrlFunction = new NodejsFunction(this, 'GetSignedUrl', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/getRagFileUploadSignedUrl.ts',
+      timeout: Duration.minutes(15),
+      environment: {
+        BUCKET_NAME: dataSourceBucket!.bucketName,
+      },
+    });
+    if(dataSourceBucket){
+      dataSourceBucket.grantPut(getSignedUrlFunction);
+    }
+
+
     const retrieveFunction = new NodejsFunction(this, 'Retrieve', {
       runtime: Runtime.NODEJS_18_X,
       entry: './lambda/retrieveKendra.ts',
@@ -246,6 +279,22 @@ export class Rag extends Construct {
     listS3ObjectsResource.addMethod(
       'POST',
       new LambdaIntegration(listS3ObjectsFunction),
+      commonAuthorizerProps
+    );
+
+    const uploadS3ObjectResource = ragResource.addResource('uploadS3Object');
+    // POST: /rag/uploadS3Object
+    uploadS3ObjectResource.addMethod(
+      'POST',
+      new LambdaIntegration(uploadS3ObjectFunction),
+      commonAuthorizerProps
+    );
+
+    const getPreSignedUrlResource = ragResource.addResource('getPreSignedUrl');
+    // POST: /rag/getPreSignedUrl
+    getPreSignedUrlResource.addMethod(
+      'POST',
+      new LambdaIntegration(getSignedUrlFunction),
       commonAuthorizerProps
     );
 
