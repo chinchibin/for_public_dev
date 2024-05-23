@@ -83,6 +83,10 @@ const DocumentPage: React.FC = () => {
     return curPath.join('/');
   };
 
+  const uploadCommon = async (files: FileList) => {
+    return uploadFile(files, getCurPath())
+  };
+
   // ========== drop upload ==========
   // const onClickExec = useCallback(() => {
   //   if (loading) return;
@@ -92,14 +96,9 @@ const DocumentPage: React.FC = () => {
   const onDropFile = async (e: React.DragEvent<HTMLInputElement>) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
-
     if (!files || files.length === 0) return;
-
-    const file: File = files[0];
-    console.log(file);
-
     try {
-      await uploadFile(file, getCurPath())
+      await uploadCommon(files);
       // refresh page
       // gotoDir(documentList[0]?.dirPath);
       gotoDir(getCurPath());
@@ -120,12 +119,8 @@ const DocumentPage: React.FC = () => {
   const onChangeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
-    const file: File = files[0];
-    console.log(file);
-
     try {
-      await uploadFile(file, getCurPath())
+      await uploadCommon(files);
       // refresh page
       gotoDir(getCurPath());
     } catch (e) {
@@ -140,8 +135,6 @@ const DocumentPage: React.FC = () => {
   // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
   const onChangeCheck = (checked?: boolean, data?: any) => {
     data.checked = checked;
-    console.log('333', checked, documentList);
-
     // Check the checked status of checkbox
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const flag = documentList.some((item: any, _i: number) => {
@@ -157,7 +150,9 @@ const DocumentPage: React.FC = () => {
 
   const onDeleteExec = async () => {
     try {
-      await deleteData('');
+      const chkList = documentList.filter((item: any) => item.checked);
+      const delList = chkList.map(item => item.key);
+      await deleteData(delList);
       setOpenDialog(false);
     } catch (e) {
 
@@ -180,7 +175,7 @@ const DocumentPage: React.FC = () => {
 
   const onReloadExec = async () => {
     try {
-      await reloadData('');
+      await reloadData();
       setOpenReloadDialog(false);
     } catch (e) {
 
@@ -277,6 +272,7 @@ const DocumentPage: React.FC = () => {
               aria-describedby="file_input_help"
               id="file_input"
               type="file"
+              multiple
               accept=".csv, .doc, .docx, .md, .pdf, .ppt, .pptx, .tsv, .xlsx"
               ref={refFile}></input>
           </div>
@@ -307,7 +303,7 @@ const DocumentPage: React.FC = () => {
                   return (
                     <tr key={'tr_' + index}>
                       <td className="w-8">
-                        {data.type !== 2 && (<Checkbox onChange={(_e, checked) => { onChangeCheck(checked, data) }}></Checkbox>)}
+                        {data.type === 1 && (<Checkbox onChange={(_e, checked) => { onChangeCheck(checked, data) }}></Checkbox>)}
                       </td>
                       <td className="w-8">
                         {data.type !== 1 && (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

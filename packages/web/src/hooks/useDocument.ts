@@ -9,6 +9,7 @@ const useDocumentState = create<{
   documentList: {
     id: string,
     type: number,   // 0-folder, 1-file
+    key: string,
     name: string,
     updateTime: string,
     size: string,
@@ -19,10 +20,10 @@ const useDocumentState = create<{
     name: string, // current folder's name
     dirPath: string, // current folder's absolute path
   }[];
-  reloadData: (dirPath: string) => void;
+  reloadData: () => void;
   getData: (dirPath: string) => void;
-  deleteData: (dirPath: string) => void;
-  uploadFile: (file: File, dirPath: string) => Promise<void>;
+  deleteData: (delList: string[]) => void;
+  uploadFile: (files: FileList, dirPath: string) => Promise<any>;
 }>((set) => {
 
   // const api = useFileApi();
@@ -100,6 +101,7 @@ const useDocumentState = create<{
       try {
         // get data by dirPath. dirPath default is 'docs'
         const res = await listS3Objects(_dirPath || defaultDir);
+        // await new Promise(resolve => setTimeout(resolve, 2000));
         const { prompts } = res;
 
         list = prompts || [];
@@ -118,7 +120,9 @@ const useDocumentState = create<{
           if (type.toLowerCase() === 'file') ftype = 1;
 
           return {
-            updateTime, name, size: fsize,
+            updateTime, key, name,
+            checked: false,
+            size: fsize,
             type: ftype,
             dirPath: dirArr.join('/')
           };
@@ -151,10 +155,29 @@ const useDocumentState = create<{
       updateDirList(list);
     },
     // ファイルのアップロード
-    uploadFile: async (file: File, dirPath: string) => {
+    uploadFile: async (files: FileList, dirPath: string) => {
+      showLoading();
+      let promiseArr = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        promiseArr.push(uploadFile(file, dirPath));
+      }
+      return Promise.all(promiseArr).then((resultArr) => {
+        let isOk = resultArr.every((res) => {
+          return res.status === 200;
+        });
+        Promise.resolve(isOk);
+        hideLoading();
+      }).catch((error) => {
+        console.error(error.message);
+        Promise.reject();
+        hideLoading();
+      });
+    },
+    deleteData: async (delList: string[]) => {
       showLoading();
       try {
-        const res = await uploadFile(file, dirPath);
+        const res = await deleteS3Objects(delList);
         console.log(res);
       } catch (e) {
         console.log(e)
@@ -162,21 +185,10 @@ const useDocumentState = create<{
         hideLoading();
       }
     },
-    deleteData: async (filePath: string) => {
+    reloadData: async () => {
       showLoading();
       try {
-        const res = await deleteS3Objects(filePath);
-        console.log(res);
-      } catch (e) {
-        console.log(e)
-      } finally {
-        hideLoading();
-      }
-    },
-    reloadData: async (dirPath: string) => {
-      showLoading();
-      try {
-        const res = await reloadS3Objects(dirPath);
+        const res = await reloadS3Objects();
         console.log(res);
       } catch (e) {
         console.log(e)

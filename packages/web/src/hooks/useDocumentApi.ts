@@ -16,19 +16,19 @@ const useDocumentApi = () => {
       return res.data;
     },
 
-    deleteS3Objects: async (dirPath: string) => {
-      const res = await http.post('rag/deleteS3Objects', { prompts: { prefix: dirPath } });
+    deleteS3Objects: async (delList: string[]) => {
+      const res = await http.post('rag/deleteS3Objects', { prompts: { prefixes: delList } });
       return res.data;
     },
 
-    reloadS3Objects: async (dirPath: string) => {
-      const res = await http.post('rag/reloadS3Objects', { prompts: { prefix: dirPath } });
+    reloadS3Objects: async () => {
+      const res = await http.post('rag/syncDatasource', { prompts: {} });
       return res.data;
     },
 
     uploadFile: async (file: File, dirPath: string) => {
       const path = decodeURIComponent(dirPath + '/' + file.name)
-      const res = await http.post('rag/getPreSignedUrl', {fileName: path})
+      const res = await http.post('rag/getPreSignedUrl', { fileName: path })
 
       const formData = new FormData()
       formData.append('data', file);
