@@ -100,7 +100,7 @@ const useDocumentState = create<{
 
   return {
     loading: false,
-    syncStatus: {status: 0, text: ''},
+    syncStatus: { status: 0, text: '' },
     dirList: [],
     documentList: [],
     getData: async (_dirPath?: string) => {
@@ -141,8 +141,6 @@ const useDocumentState = create<{
         console.log(e);
         list = [];
       } finally {
-        const { result } = await getSyncStatus(); // {result: {status: '2024-04-13 12:34:12'}}
-        setSyncStatus(result?.status || '');
       }
 
       // add prev folder
@@ -164,6 +162,13 @@ const useDocumentState = create<{
 
       updateDocumentList(list);
       updateDirList(curPath);
+
+      try {
+        const { result } = await getSyncStatus(); // {result: {status: '2024-04-13 12:34:12'}}
+        setSyncStatus(result?.status || '');
+      } catch (e) {
+        console.log(e);
+      }
     },
     // ファイルのアップロード
     uploadFile: async (files: FileList, dirPath: string) => {

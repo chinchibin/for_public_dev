@@ -264,7 +264,7 @@ const App: React.FC = () => {
         <div className='fixed w-[100%] z-[100] float-right bg-aws-smile h-15'>
           <div className="flex text-white items-center justify-between border-t border-gray-400 px-3 py-2 z-100">
             <div>
-              <img src={Logo} />
+              <a href="/chat"><img src={Logo} style={{height: '36px'}} /></a>
             </div>
             <div className="flex items-center">
               <IconWithDot showDot={hasUpdate}>
