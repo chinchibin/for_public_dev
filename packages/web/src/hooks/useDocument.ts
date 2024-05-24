@@ -141,6 +141,7 @@ const useDocumentState = create<{
         console.log(e);
         list = [];
       } finally {
+        getSyncStatus();
         // console.log(list)
       }
 
@@ -246,8 +247,7 @@ const useDocument = () => {
 
   useEffect(() => {
     getData('');
-    getSyncStatus();
-  }, [getData, getSyncStatus]);
+  }, [getData]);
 
   return {
     loading,

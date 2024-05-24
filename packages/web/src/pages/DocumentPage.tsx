@@ -24,7 +24,6 @@ const DocumentPage: React.FC = () => {
     deleteData,
     reloadData,
     updateChecked,
-    getSyncStatus
   } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -140,7 +139,6 @@ const DocumentPage: React.FC = () => {
     } catch (e) {
 
     } finally {
-      getSyncStatus();
     }
   };
 
