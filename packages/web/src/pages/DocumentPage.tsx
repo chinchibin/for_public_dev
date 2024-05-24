@@ -162,6 +162,7 @@ const DocumentPage: React.FC = () => {
       const chkList = documentList.filter((item: any) => item.checked);
       const delList = chkList.map(item => item.key);
       await deleteData(delList);
+      gotoDir(getCurPath());
       setOpenDialog(false);
     } catch (e) {
 
