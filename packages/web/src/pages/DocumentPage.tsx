@@ -155,12 +155,12 @@ const DocumentPage: React.FC = () => {
           選択している項目を削除してもよろしいでしょうか？
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <Button outlined onClick={() => { setOpenDialog(false); }} className="p-2">
+          <Button onClick={() => { setOpenDialog(false); }} className="p-2 w-full bg-black text-white rounded-lg bg-aws-smile border flex items-center justify-centerp-1 px-3 hover:brightness-75">
             Cancel
           </Button>
           <Button
             onClick={onDeleteExec}
-            className="bg-red-500 p-2 text-white">
+            className="p-2 w-full bg-black text-white rounded-lg bg-aws-smile border flex items-center justify-centerp-1 px-3 hover:brightness-75">
             削除
           </Button>
         </div>
@@ -178,12 +178,12 @@ const DocumentPage: React.FC = () => {
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
-          <Button outlined onClick={() => { setOpenReloadDialog(false); }} className="p-2">
+          <Button onClick={() => { setOpenReloadDialog(false); }} className="p-2 w-full bg-black text-white rounded-lg bg-aws-smile border flex items-center justify-centerp-1 px-3 hover:brightness-75">
             Cancel
           </Button>
           <Button
             onClick={onReloadExec}
-            className="bg-red-500 p-2 text-white">
+            className="p-2 w-full bg-black text-white rounded-lg bg-aws-smile border flex items-center justify-centerp-1 px-3 hover:brightness-75">
             OK
           </Button>
         </div>
