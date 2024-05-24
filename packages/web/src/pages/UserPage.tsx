@@ -1,18 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Location, useLocation } from 'react-router-dom';
-import { create } from 'zustand';
-import useTyping from '../hooks/useTyping';
-import { MODELS } from '../hooks/useModel';
-import useUser from '../hooks/useUser';
-
-import Card from '../components/Card';
-import Button from '../components/Button';
+import React, { useState } from 'react';
 import Pagination from '../components/Pagination';
-import ModalDialog from '../components/ModalDialog';
-// import UserDetailPage from '../components/UserDetailModal';
-import { Checkbox } from '@fluentui/react'; // import  Checkbox  from '../components/Checkbox';
 import { ChoiceGroup, TextField } from "@fluentui/react";
-
+import useUser from '../hooks/useUser';
 
 // type StateType = {
 //   pageNo: number;
@@ -31,9 +20,7 @@ import { ChoiceGroup, TextField } from "@fluentui/react";
 
 
 const UserPage: React.FC = () => {
-  // const { pageNo, setPageNo } = useUserPageState();
-  const { pathname } = useLocation();
-  const { userList, search } = useUser(pathname);
+  const { userList, search } = useUser();
 
   const [openDialog, setOpenDialog] = useState(true);
   // const [dialogTitle, setDialogTitle] = useState("ユーザ詳細");
@@ -44,24 +31,23 @@ const UserPage: React.FC = () => {
   const [selectedKey, setSelectedKey] = useState<string | undefined>('0');
   const [pageNo, setPageNo] = useState<number>(1);
 
-  const refFile = useRef<HTMLInputElement>(null);
-
+  console.log(openDialog, itemBango, pageNo);
   // ========== search ==========
 
-  const options: IChoiceGroupOption[] = [
+  const options: any[] = [
     [{ key: '0', text: '社員番号', iptDisabled: false }],
     [{ key: '1', text: 'メールアドレス', iptDisabled: true }],
   ];
 
-  const onChange = React.useCallback((ev: React.SyntheticEvent<HTMLElement>, option: IChoiceGroupOption) => {
+  const onChange = React.useCallback((_ev: any, option: any) => {
     setSelectedKey(option.key);
   }, []);
 
 
   const doSearch = () => {
     let data = {
-      bango: String,
-      email: String,
+      bango: '',
+      email: '',
     };
     // selectedKey:0-社員番号, 1-email; value-入力値
     if (selectedKey === '0') {
@@ -78,7 +64,7 @@ const UserPage: React.FC = () => {
   const showDialog = (type: string, bango?: string) => {
     setOpenDialog(true);
     if (type === 'edit') {
-      setItemBango(bango);
+      setItemBango(bango || '');
     }
     // setDialogTitle('');
   }
@@ -86,7 +72,7 @@ const UserPage: React.FC = () => {
 
   // ========== pagination ==========
 
-  const skipToPage = function (cur: number, e: React.MouseEvent<HTMLInputElement>) {
+  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {
     setPageNo(cur);
   };
 
@@ -113,7 +99,7 @@ const UserPage: React.FC = () => {
               />
               <div className="pt-2 ml-7">
                 <TextField placeholder='社員番号' disabled={selectedKey !== '0'}
-                  onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setBango(newValue) }} />
+                  onChange={(_ev: any, newValue: any) => { setBango(newValue) }} />
               </div>
             </div>
             <div className="mt-3">
@@ -124,7 +110,7 @@ const UserPage: React.FC = () => {
               />
               <div className="pt-2 ml-7">
                 <TextField placeholder='メールアドレス' disabled={selectedKey === '0'}
-                  onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setEmail(newValue) }} />
+                  onChange={(_ev: any, newValue: any) => { setEmail(newValue) }} />
               </div>
             </div>
           </div>
@@ -156,7 +142,7 @@ const UserPage: React.FC = () => {
           <div style={{ height: '500px' }} className="overflow-y-auto mb-4">
             <table className="w-full" style={{ marginTop: '-1px' }}>
               <tbody>
-                {userList?.map((data: Object, index: Number) => {
+                {userList?.map((data: any, index: number) => {
                   return (
                     <tr key={'tr_' + index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
                       <td className="pl-2 w-2/12 h-10 border border-gray-300">

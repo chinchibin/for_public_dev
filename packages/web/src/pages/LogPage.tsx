@@ -1,15 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Location, useLocation } from 'react-router-dom';
-import { create } from 'zustand';
-import useTyping from '../hooks/useTyping';
-import { MODELS } from '../hooks/useModel';
+import React, { useState } from 'react';
 import useLog from '../hooks/useLog';
 
-import Card from '../components/Card';
-import Button from '../components/Button';
 import Pagination from '../components/Pagination';
-import ModalDialog from '../components/ModalDialog'
-import { Checkbox } from '@fluentui/react'; // import  Checkbox  from '../components/Checkbox';
 import { ChoiceGroup, TextField } from "@fluentui/react";
 
 
@@ -30,14 +22,8 @@ import { ChoiceGroup, TextField } from "@fluentui/react";
 
 
 const LogPage: React.FC = () => {
-  // const { pageNo, setPageNo } = useLogPageState();
-  const { pathname } = useLocation();
-  const { logList, search } = useLog(pathname);
+  const { logList, search } = useLog();
 
-  const [openDialog, setOpenDialog] = useState(true);
-  // const [dialogTitle, setDialogTitle] = useState("ユーザ詳細");
-
-  const [itemBango, setItemBango] = useState("");
   const [torokuDt, setTorokuDt] = useState("");
   const [bango, setBango] = useState("");
   const [email, setEmail] = useState("");
@@ -46,38 +32,38 @@ const LogPage: React.FC = () => {
   const [selectedSubKey, setSelectedSubKey] = useState<string | undefined>('0');
   const [pageNo, setPageNo] = useState<number>(1);
 
-  const refFile = useRef<HTMLInputElement>(null);
+  console.log(pageNo);
 
   // ========== search ==========
 
-  const subOptions: IChoiceGroupOption[] = [
+  const subOptions: any[] = [
     [{ key: '0', text: '' }],
     [{ key: '1', text: '' }],
   ];
 
 
-  const onChangeSub = React.useCallback((ev: React.SyntheticEvent<HTMLElement>, option: IChoiceGroupOption) => {
+  const onChangeSub = React.useCallback((_ev: any, option: any) => {
     setSelectedSubKey(option.key);
   }, []);
 
 
-  const options: IChoiceGroupOption[] = [
+  const options: any[] = [
     [{ key: '0', text: '登録日時', iptDisabled: false }],
     [{ key: '1', text: '利用者', iptDisabled: true }],
     [{ key: '2', text: 'コンテンツ', iptDisabled: true }],
   ];
 
-  const onChange = React.useCallback((ev: React.SyntheticEvent<HTMLElement>, option: IChoiceGroupOption) => {
+  const onChange = React.useCallback((_ev: any, option: any) => {
     setSelectedKey(option.key);
   }, []);
 
 
   const doSearch = () => {
     let data = {
-      torokuDt: String,
-      bango: String,
-      email: String,
-      content: String
+      torokuDt: '',
+      bango: '',
+      email: '',
+      content: ''
     };
     // selectedKey:0-社員番号, 1-email; value-入力値
     if (selectedKey === '0') {
@@ -95,7 +81,7 @@ const LogPage: React.FC = () => {
 
   // ========== pagination ==========
 
-  const skipToPage = function (cur: number, e: React.MouseEvent<HTMLInputElement>) {
+  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {
     setPageNo(cur);
   };
 
@@ -115,7 +101,7 @@ const LogPage: React.FC = () => {
               />
               <div className="pt-2 ml-7">
                 <TextField placeholder='前方一致検索' disabled={selectedKey !== '0'}
-                  onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setTorokuDt(newValue) }} />
+                  onChange={(_ev: any, newValue: any) => { setTorokuDt(newValue) }} />
               </div>
             </div>
             <div>
@@ -134,7 +120,7 @@ const LogPage: React.FC = () => {
                     disabled={selectedKey !== '1'}
                   />
                   <TextField placeholder='社員番号' disabled={!(selectedKey === '1' && selectedSubKey === '0')} className="ml-1"
-                    onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setBango(newValue) }} />
+                    onChange={(_ev: any, newValue: any) => { setBango(newValue) }} />
                 </div>
                 <div className="flex ml-6">
                   <ChoiceGroup
@@ -145,7 +131,7 @@ const LogPage: React.FC = () => {
                     disabled={selectedKey !== '1'}
                   />
                   <TextField placeholder='メールアドレス' disabled={!(selectedKey === '1' && selectedSubKey === '1')} className="ml-1"
-                    onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setEmail(newValue) }} />
+                    onChange={(_ev: any, newValue: any) => { setEmail(newValue) }} />
                 </div>
               </div>
             </div>
@@ -157,7 +143,7 @@ const LogPage: React.FC = () => {
               />
               <div className="pt-2 ml-7">
                 <TextField placeholder='部分一致検索' disabled={selectedKey !== '2'}
-                  onChange={(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue: string) => { setContent(newValue) }} />
+                  onChange={(_ev: any, newValue: any) => { setContent(newValue) }} />
               </div>
             </div>
           </div>
@@ -183,7 +169,7 @@ const LogPage: React.FC = () => {
           <div style={{ height: '500px' }} className="overflow-y-auto mb-4">
             <table className="w-full" style={{ marginTop: '-1px' }}>
               <tbody>
-                {logList?.map((data: Object, index: Number) => {
+                {logList?.map((data: any, index: number) => {
                   return (
                     <tr key={'tr_' + index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
                       <td className="pl-2 border border-gray-300" style={{ width: '180px' }}>

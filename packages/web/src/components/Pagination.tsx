@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { BaseProps } from '../@types/common';
-import { PiInfo, PiXCircle, PiX } from 'react-icons/pi';
-import ButtonIcon from './ButtonIcon';
 
 // MEMO: 現在は Error しか実装していない
 type Props = BaseProps & {
@@ -18,7 +16,7 @@ const Pagination: React.FC<Props> = (props) => {
     const pageTotal = useMemo(() => {
         let { sum, pageSize } = props;
         pageSize = pageSize ? pageSize : 10;
-        let pageTotal: number = parseInt(Math.ceil(sum / pageSize));
+        let pageTotal: number = Math.ceil(sum / pageSize);
         return pageTotal;
     }, [props.sum, props.pageSize]);
 

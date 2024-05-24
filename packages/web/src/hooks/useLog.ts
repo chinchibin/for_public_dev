@@ -1,7 +1,5 @@
-import { produce } from 'immer';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { create } from 'zustand';
-import useHttp from './useHttp';
 
 let testIdx = 0;
 
@@ -12,11 +10,11 @@ const useLogState = create<{
     status: String,
     role: Number,
   }[];
-  getData: (type: number, value: string) => void;
-}>((set, get) => {
+  getData: (value: any) => void;
+}>((set, _get) => {
 
   const updateLogList = (list: any[]) => {
-    set((state) => {
+    set((_state) => {
       return {
         logList: list
       };
@@ -25,13 +23,12 @@ const useLogState = create<{
 
   return {
     logList: [],
-    getData: async (data?: object) => {
-      const http = useHttp();
+    getData: async (data: object) => {
       let list: any[] = [];
+      console.log(data);
 
       try {
         // --------------- mock data start ---------------
-        let params = data;
         await new Promise(resolve => setTimeout(resolve, 200));
         // const res = await http.post('chats', {});
 
@@ -57,14 +54,14 @@ const useLogState = create<{
   };
 });
 
-const useLog = (id: string) => {
+const useLog = () => {
   const {
     logList,
     getData,
   } = useLogState();
 
   useEffect(() => {
-    getData();
+    getData({});
   }, [getData]);
 
   return {
