@@ -261,7 +261,7 @@ const DocumentPage: React.FC = () => {
                   return (
                     <tr key={'tr_' + index}>
                       <td className="w-8">
-                        {data.type === 1 && (<Checkbox checked={data.checked} onChange={(_e, checked) => { onChangeCheck(checked || false, index) }}></Checkbox>)}
+                        {data.type !== 2 && (<Checkbox checked={data.checked} onChange={(_e, checked) => { onChangeCheck(checked || false, index) }}></Checkbox>)}
                       </td>
                       <td className="w-8">
                         {data.type !== 1 && (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
