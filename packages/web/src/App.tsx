@@ -1,4 +1,4 @@
-import React, { useMemo ,useState,useContext,useEffect} from 'react';
+import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   PiList,
@@ -28,10 +28,10 @@ import useVersion from './hooks/useVersion';
 import useConversation from './hooks/useConversation';
 import PopupInterUseCasesDemo from './components/PopupInterUseCasesDemo';
 import useInterUseCases from './hooks/useInterUseCases';
-import {SuggestionPanel} from './components/SuggestionPanel';
-import {NewSuggestionItemPanel} from './components/NewSuggestionItemPanel';
-import {UpdateSuggestionItemPanel} from './components/UpdateSuggestionItemPanel';
-import {AppStateContext } from "./state/AppProvider";
+import { SuggestionPanel } from './components/SuggestionPanel';
+import { NewSuggestionItemPanel } from './components/NewSuggestionItemPanel';
+import { UpdateSuggestionItemPanel } from './components/UpdateSuggestionItemPanel';
+import { AppStateContext } from "./state/AppProvider";
 import IconWithDot from './components/IconWithDot';
 import useSWR from 'swr';
 import { Auth } from 'aws-amplify';
@@ -51,7 +51,7 @@ import SignOutMenu from './components/SignOutMenu';
 //  import.meta.env.VITE_APP_RECOGNIZE_FILE_ENABLED === 'true';
 
 const items: ItemProps[] = [
- // {
+  // {
   //   label: 'ホーム',
   //   to: '/',
   //   icon: <PiHouse />,
@@ -81,7 +81,7 @@ const items: ItemProps[] = [
   //       name:'rag',
   //     }
   //   : null,
- // agentEnabled
+  // agentEnabled
   //   ? {
   //       label: 'Agent チャット',
   //       to: '/agent',
@@ -160,11 +160,9 @@ const extractChatId = (path: string): string | null => {
 
 const App: React.FC = () => {
   const { getHasUpdate } = useVersion();
-  const { createPrompts,updatePrompt} =  useChatApi();
+  const { createPrompts, updatePrompt } = useChatApi();
 
   const { data: prompts, error } = useChatApi().listPrompts();
-
-  
 
   // 第一引数は不要だが、ないとリクエストされないため 'user' 文字列を入れる
   const { data } = useSWR('user', async () => {
@@ -192,46 +190,50 @@ const App: React.FC = () => {
     }
   }, [pathname, getConversationTitle]);
 
+  const showLeftRightPanel = () => {
+    let list = ['/document']; // left and right panel isn't show
+    return !list.some(path => path === pathname);
+  };
 
   const appStateContext = useContext(AppStateContext)
 
   const [recordedPrompts, setRecordedPrompts] = useState<RecordedPrompt[]>([]);
   useEffect(() => {
-    if (prompts&&!error){
+    if (prompts && !error) {
       console.log(prompts.prompts);
       setRecordedPrompts(prompts.prompts);
     }
-  }, [prompts,error]);
+  }, [prompts, error]);
 
-  const onSave =async (recordedPrompt: RecordedPrompt) => {
-  const newRecordedPrompts = [...recordedPrompts, recordedPrompt];
-  setRecordedPrompts(newRecordedPrompts);
-  const prompts: ToBeRecordedPrompt[] = [
-    {
-      title: recordedPrompt.title,
-      content: recordedPrompt.content,
-      type: recordedPrompt.type,
-    }
-  ];
-  const requestprompt: CreatePromptsRequest = {prompts};
-  await createPrompts(requestprompt);
+  const onSave = async (recordedPrompt: RecordedPrompt) => {
+    const newRecordedPrompts = [...recordedPrompts, recordedPrompt];
+    setRecordedPrompts(newRecordedPrompts);
+    const prompts: ToBeRecordedPrompt[] = [
+      {
+        title: recordedPrompt.title,
+        content: recordedPrompt.content,
+        type: recordedPrompt.type,
+      }
+    ];
+    const requestprompt: CreatePromptsRequest = { prompts };
+    await createPrompts(requestprompt);
   };
 
   const [updatePromptItem, setUpdatePromptItem] = useState<RecordedPrompt>();
 
-  const handleUpdatePromptChange = (newPromptItem:RecordedPrompt) => {
+  const handleUpdatePromptChange = (newPromptItem: RecordedPrompt) => {
     setUpdatePromptItem(newPromptItem);
   };
 
-  const handleDoUpdatePromptChange =async (recordedPrompt: RecordedPrompt) => {
-    const prompts: UpdatePromptRequest = 
-      {
-        uuid: recordedPrompt.uuid,
-        createdDate:recordedPrompt.createdDate,
-        content: recordedPrompt.content,
-        type:recordedPrompt.type,
-      }
-    ;
+  const handleDoUpdatePromptChange = async (recordedPrompt: RecordedPrompt) => {
+    const prompts: UpdatePromptRequest =
+    {
+      uuid: recordedPrompt.uuid,
+      createdDate: recordedPrompt.createdDate,
+      content: recordedPrompt.content,
+      type: recordedPrompt.type,
+    }
+      ;
     const requestprompt: UpdatePromptRequest = prompts;
     await updatePrompt(requestprompt);
 
@@ -259,20 +261,20 @@ const App: React.FC = () => {
       <main className="flex-1">
         <div className='fixed w-[100%] z-[100] right-5 float-right bg-aws-smile h-15 rounded-lg'>
           <div className="flex text-white items-center justify-end border-t border-gray-400 px-3 py-2 z-100">
-            
+
             <IconWithDot showDot={hasUpdate}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
               </svg>
             </IconWithDot>
-            
+
             {/* <Link
               to="/setting"
               className="mr-2 overflow-x-hidden hover:brightness-75">
               
             </Link> */}
             <SignOutMenu label={email}></SignOutMenu>
-            
+
           </div>
         </div>
         <header className="bg-aws-squid-ink visible flex h-12 w-full items-center justify-between text-lg text-white lg:invisible lg:h-0 print:hidden">
@@ -290,15 +292,18 @@ const App: React.FC = () => {
           <div className="w-10" />
         </header>
 
-        <div
-          className={`fixed -left-64 top-20 z-10 transition-all lg:left-0 lg:z-10 ${isOpenDrawer ? 'left-0' : '-left-64'}`}>
-          <Drawer items={items} />
-        </div>
-        <SuggestionPanel recordedPrompts={recordedPrompts} onUpdatePromptChange={handleUpdatePromptChange} />
-        {appStateContext?.state.isNewSuggestionOpen && <NewSuggestionItemPanel onSave={onSave}/>}
+        {showLeftRightPanel() && (<>
+          <div
+            className={`fixed -left-64 top-20 z-10 transition-all lg:left-0 lg:z-10 ${isOpenDrawer ? 'left-0' : '-left-64'}`}>
+            <Drawer items={items} />
+          </div>
+          <SuggestionPanel recordedPrompts={recordedPrompts} onUpdatePromptChange={handleUpdatePromptChange} />
+        </>)
+        }
+        {appStateContext?.state.isNewSuggestionOpen && <NewSuggestionItemPanel onSave={onSave} />}
         {appStateContext?.state.isUpdateSuggestionOpen && updatePromptItem && <UpdateSuggestionItemPanel updatePromptItem={updatePromptItem} onUpdatePromptChange={handleDoUpdatePromptChange} />}
         <div
-          id="smallDrawerFiller" style={{marginTop: 5 + 'em'}}
+          id="smallDrawerFiller" style={{ marginTop: 5 + 'em' }}
           className={`${isOpenDrawer ? 'visible' : 'invisible'} lg:invisible`}>
           <div
             className="screen:h-screen fixed top-0 z-40 w-screen bg-gray-900/90"
@@ -309,7 +314,7 @@ const App: React.FC = () => {
             <PiX />
           </ButtonIcon>
         </div>
-        <div className="text-aws-font-color lg:ml-64 lg:mr-64" id="main">
+        <div className={"text-aws-font-color " + (showLeftRightPanel() ? "lg:ml-64 lg:mr-64" : "")} id="main">
           {/* ユースケース間連携時に表示 */}
           {isShow && <PopupInterUseCasesDemo />}
           <Outlet />
