@@ -36,6 +36,8 @@ import IconWithDot from './components/IconWithDot';
 import useSWR from 'swr';
 import { Auth } from 'aws-amplify';
 import useChatApi from './hooks/useChatApi';
+import Logo from './assets/logo.jpg';
+
 
 import {
   CreatePromptsRequest,
@@ -259,22 +261,25 @@ const App: React.FC = () => {
   return (
     <div className="screen:w-screen screen:h-screen overflow-x-hidden">
       <main className="flex-1">
-        <div className='fixed w-[100%] z-[100] right-5 float-right bg-aws-smile h-15 rounded-lg'>
-          <div className="flex text-white items-center justify-end border-t border-gray-400 px-3 py-2 z-100">
+        <div className='fixed w-[100%] z-[100] float-right bg-aws-smile h-15'>
+          <div className="flex text-white items-center justify-between border-t border-gray-400 px-3 py-2 z-100">
+            <div>
+              <img src={Logo} />
+            </div>
+            <div className="flex items-center">
+              <IconWithDot showDot={hasUpdate}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+              </IconWithDot>
 
-            <IconWithDot showDot={hasUpdate}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
-            </IconWithDot>
-
-            {/* <Link
+              {/* <Link
               to="/setting"
               className="mr-2 overflow-x-hidden hover:brightness-75">
               
             </Link> */}
-            <SignOutMenu label={email}></SignOutMenu>
-
+              <SignOutMenu label={email}></SignOutMenu>
+            </div>
           </div>
         </div>
         <header className="bg-aws-squid-ink visible flex h-12 w-full items-center justify-between text-lg text-white lg:invisible lg:h-0 print:hidden">

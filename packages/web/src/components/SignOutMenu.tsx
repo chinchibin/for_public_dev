@@ -6,6 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Logout from '@mui/icons-material/Logout';
 import { useCallback } from 'react';
 import { Auth } from 'aws-amplify';
+import {ReactComponent as DocumentIcon} from '../assets/document.svg';
 
 export default function SignOutMenu({ label }: { label: string }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -59,6 +60,9 @@ export default function SignOutMenu({ label }: { label: string }) {
         }}
       >
         <MenuItem onClick={() => { handleSkip('/document'); }}>
+          <ListItemIcon>
+            <DocumentIcon></DocumentIcon>
+          </ListItemIcon>
           ドキュメント一覧
         </MenuItem>
         <MenuItem onClick={handleClose}>
