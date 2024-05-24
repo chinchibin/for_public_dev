@@ -28,6 +28,8 @@ const useDocumentState = create<{
   uploadFile: (files: FileList, dirPath: string) => Promise<any>;
 }>((set) => {
 
+  const defaultDir = 'docs';
+
   // const api = useFileApi();
   const {
     listS3Objects,
@@ -58,21 +60,10 @@ const useDocumentState = create<{
     });
   };
 
-  const updateDirList = (list: any[]) => {
+  const updateDirList = (dirPath: string) => {
     set((_state) => {
       const dirList: any[] = [];
-
-      if (list.length == 0) {
-        return { dirList };
-      }
-
-      const dirPath = list[list.length - 1].dirPath;
-      if (!dirPath) {
-        return { dirList };
-      }
-
       const strList = dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/');
-
       let curPath = '';
       strList.map((name: string, _i: number) => {
         curPath += '/' + name;
@@ -81,12 +72,6 @@ const useDocumentState = create<{
           dirPath: curPath
         })
       });
-
-      // the last dir don't refresh
-      if (dirList.length > 0) {
-        dirList[dirList.length - 1].dirPath = '';
-      }
-
       return { dirList };
     });
   };
@@ -98,7 +83,6 @@ const useDocumentState = create<{
     getData: async (_dirPath?: string) => {
       _dirPath = _dirPath?.replace(/(^\/)|(\/$)/gmi, '');
       let list: any[] = [];
-      const defaultDir = 'docs';
       const curPath = _dirPath || defaultDir;
 
       try {
@@ -155,7 +139,7 @@ const useDocumentState = create<{
       }
 
       updateDocumentList(list);
-      updateDirList(list);
+      updateDirList(curPath);
     },
     // ファイルのアップロード
     uploadFile: async (files: FileList, dirPath: string) => {

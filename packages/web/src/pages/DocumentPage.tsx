@@ -173,7 +173,7 @@ const DocumentPage: React.FC = () => {
 
   // ========== click dir ==========
   const onClickDir = (e: React.MouseEvent<Element>, dirPath: string) => {
-    // console.log('go to dir:', dirPath);
+    console.log('go to dir:', dirPath);
     e.preventDefault();
     gotoDir(dirPath);
   };
@@ -294,12 +294,7 @@ const DocumentPage: React.FC = () => {
             {dirList?.map((dir: any, i: number) => {
               return (
                 <>
-                  {
-                    dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)
-                  }
-                  {
-                    !dir.dirPath && (<a key={'dirname_' + i} className="mx-1 hover:text-blue-700">{dir.name}</a>)
-                  }
+                  {dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)}
                   <span key={'slash_' + i}>/</span>
                 </>
               );
