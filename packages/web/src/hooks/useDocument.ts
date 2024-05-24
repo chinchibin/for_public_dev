@@ -99,10 +99,11 @@ const useDocumentState = create<{
       _dirPath = _dirPath?.replace(/(^\/)|(\/$)/gmi, '');
       let list: any[] = [];
       const defaultDir = 'docs';
+      const curPath = _dirPath || defaultDir;
 
       try {
         // get data by dirPath. dirPath default is 'docs'
-        const res = await listS3Objects(_dirPath || defaultDir);
+        const res = await listS3Objects(curPath);
         // await new Promise(resolve => setTimeout(resolve, 2000));
         const { prompts } = res;
 
@@ -137,10 +138,10 @@ const useDocumentState = create<{
       }
 
       // add prev folder
-      if (list.length > 0 && list[0].dirPath !== defaultDir) {
-        const arr = list[0].dirPath.replace(/^\//g, '').replace(/\/+$/g, '').split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
+      if (curPath !== defaultDir) {
+        const arr = curPath.split('/'); // [ MSS, 1_設計書, 2_テスト資料 ]
         arr?.pop(); // [ MSS, 1_設計書 ]
-        const prevPath = '/' + arr.join('/'); //  /MSS/1_設計書
+        const prevPath = arr.join('/'); //  /MSS/1_設計書
         list.unshift(
           {
             type: 2,   // 0-folder, 1-file,  2-prev folder
