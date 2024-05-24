@@ -21,7 +21,12 @@ const useDocumentState = create<{
     name: string, // current folder's name
     dirPath: string, // current folder's absolute path
   }[];
+  syncStatus: {
+    status: number, // 0-未同期, 1-同期中, 2-同期時間ある
+    text: string, // 内容
+  };
   reloadData: () => void;
+  getSyncStatus: () => void;
   getData: (dirPath: string) => void;
   updateChecked: (i: number, chked: boolean) => void;
   deleteData: (delList: string[]) => void;
@@ -35,7 +40,8 @@ const useDocumentState = create<{
     listS3Objects,
     uploadFile,
     deleteS3Objects,
-    reloadS3Objects
+    reloadS3Objects,
+    getSyncStatus
   } = userDocumentApi();
 
   const showLoading = () => {
@@ -60,6 +66,22 @@ const useDocumentState = create<{
     });
   };
 
+  // 0-未同期, 1-同期中, 2-同期時間ある
+  const setSyncStatus = (result: string) => {
+    let status = 0;
+    let text = '';
+    if (result === "sync") {
+      status = 1;
+      text = '同期中';
+    } else if (/^\d{4}/gmi.test(result)) {
+      status = 2;
+      text = result;
+    }
+    set(() => ({
+      syncStatus: { status, text }
+    }));
+  };
+
   const updateDirList = (dirPath: string) => {
     set((_state) => {
       const dirList: any[] = [];
@@ -78,6 +100,7 @@ const useDocumentState = create<{
 
   return {
     loading: false,
+    syncStatus: {status: 0, text: ''},
     dirList: [],
     documentList: [],
     getData: async (_dirPath?: string) => {
@@ -192,12 +215,25 @@ const useDocumentState = create<{
         };
       });
     },
+    getSyncStatus: async () => {
+      try {
+        const { result } = await getSyncStatus();
+        setSyncStatus(result);
+      } catch (e) {
+        // setSyncStatus('sync');
+        // setSyncStatus('-');
+        // setSyncStatus('2024-05-24 10:05:34');
+        console.log(e)
+      } finally {
+      }
+    }
   };
 });
 
 const useDocument = () => {
   const {
     loading,
+    syncStatus,
     documentList,
     dirList,
     getData,
@@ -205,21 +241,25 @@ const useDocument = () => {
     deleteData,
     reloadData,
     updateChecked,
+    getSyncStatus,
   } = useDocumentState();
 
   useEffect(() => {
     getData('');
-  }, [getData]);
+    getSyncStatus();
+  }, [getData, getSyncStatus]);
 
   return {
     loading,
+    syncStatus,
     documentList,
     dirList,
     gotoDir: getData,
     uploadFile,
     deleteData,
     reloadData,
-    updateChecked
+    updateChecked,
+    getSyncStatus
   };
 };
 export default useDocument;

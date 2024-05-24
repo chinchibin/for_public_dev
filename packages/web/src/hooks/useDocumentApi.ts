@@ -16,6 +16,11 @@ const useDocumentApi = () => {
       return res.data;
     },
 
+    getSyncStatus: async () => {
+      const res = await http.post('rag/getSyncStatus', { prompts: {} });
+      return res.data;
+    },
+
     deleteS3Objects: async (delList: string[]) => {
       const res = await http.post('rag/deleteS3Objects', { prompts: { prefixes: delList } });
       return res.data;

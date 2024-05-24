@@ -11,64 +11,20 @@ import ModalDialog from '../components/ModalDialog';
 import { Text, Loader } from '@aws-amplify/ui-react';
 import { Checkbox } from '@fluentui/react'; // import  Checkbox  from '../components/Checkbox';
 
-// type StateType = {
-//   modelId: string;
-//   setModelId: (c: string) => void;
-//   sentence: string;
-//   setSentence: (s: string) => void;
-//   additionalContext: string;
-//   setAdditionalContext: (s: string) => void;
-//   summarizedSentence: string;
-//   setSummarizedSentence: (s: string) => void;
-//   clear: () => void;
-// };
-
-// const useDocumentPageState = create<StateType>((set) => {
-//   const INIT_STATE = {
-//     modelId: '',
-//     sentence: '',
-//     additionalContext: '',
-//     summarizedSentence: '',
-//   };
-//   return {
-//     ...INIT_STATE,
-//     setModelId: (s: string) => {
-//       set(() => ({
-//         modelId: s,
-//       }));
-//     },
-//     setSentence: (s: string) => {
-//       set(() => ({
-//         sentence: s,
-//       }));
-//     },
-//     setAdditionalContext: (s: string) => {
-//       set(() => ({
-//         additionalContext: s,
-//       }));
-//     },
-//     setSummarizedSentence: (s: string) => {
-//       set(() => ({
-//         summarizedSentence: s,
-//       }));
-//     },
-//     clear: () => {
-//       set(INIT_STATE);
-//     },
-//   };
-// });
-
 const DocumentPage: React.FC = () => {
 
   // const { state } = useLocation() as Location<EditorialPageLocationState>;
   // const { pathname } = useLocation();
   const {
-    loading, documentList, dirList,
+    loading,
+    syncStatus,
+    documentList, dirList,
     gotoDir,
     uploadFile,
     deleteData,
     reloadData,
-    updateChecked
+    updateChecked,
+    getSyncStatus
   } = useDocument();
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -142,14 +98,7 @@ const DocumentPage: React.FC = () => {
   // ========== check and delete ==========
   // ev?: React.FormEvent<HTMLInputElement | HTMLElement> | undefined,
   const onChangeCheck = (checked: boolean, index: number) => {
-    // data.checked = checked;
     updateChecked(index, checked);
-    // Check the checked status of checkbox
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // const flag = documentList.some((item: any, _i: number) => {
-    //   return item.checked;
-    // });
-    // setBtnVisible(flag);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -180,6 +129,7 @@ const DocumentPage: React.FC = () => {
 
   // ========== reload ==========
   const onClickReloadBtn = async (_e: React.MouseEvent<HTMLInputElement>) => {
+    if (syncStatus.status === 1) return;
     setOpenReloadDialog(true);
   };
 
@@ -190,7 +140,7 @@ const DocumentPage: React.FC = () => {
     } catch (e) {
 
     } finally {
-
+      getSyncStatus();
     }
   };
 
@@ -271,7 +221,7 @@ const DocumentPage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
               </svg>
             </span>
-            <span className="cursor-pointer select-none" onClick={onClickReloadBtn}>
+            <span className={"select-none " + (syncStatus.status === 1 ? "opacity-70 cursor-not-allowed" : "cursor-pointer")} onClick={onClickReloadBtn}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
@@ -286,19 +236,22 @@ const DocumentPage: React.FC = () => {
               accept=".csv, .doc, .docx, .md, .pdf, .ppt, .pptx, .tsv, .xlsx"
               ref={refFile}></input>
           </div>
-          <div className="flex flex-center bg-gray-300 p-2 items-center font-bold">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 fill-black stroke-white mr-2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-            </svg>
-            <span>/</span>
-            {dirList?.map((dir: any, i: number) => {
-              return (
-                <>
-                  {dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)}
-                  <span key={'slash_' + i}>/</span>
-                </>
-              );
-            })}
+          <div className="flex flex-center justify-between bg-gray-300 p-2 items-center font-bold">
+            <div className="flex flex-center items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 fill-black stroke-white mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
+              </svg>
+              <span>/</span>
+              {dirList?.map((dir: any, i: number) => {
+                return (
+                  <>
+                    {dir.dirPath && (<a key={'dirname_' + i} href={dir.dirPath} className="mx-1 hover:text-blue-700" onClick={(e: React.MouseEvent<Element, MouseEvent>) => { onClickDir(e, dir.dirPath) }}>{dir.name}</a>)}
+                    <span key={'slash_' + i}>/</span>
+                  </>
+                );
+              })}
+            </div>
+            {syncStatus.status !== 0 && (<div className="whitespace-nowrap pr-2">{syncStatus.text}</div>)}
           </div>
 
           <Card>
