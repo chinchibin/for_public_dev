@@ -97,6 +97,18 @@ const useDocumentState = create<{
       return { dirList };
     });
   };
+  const getSyncStatusFn = async () => {
+    try {
+      const { result } = await getSyncStatus();
+      setSyncStatus(result?.status || '');
+    } catch (e) {
+      // setSyncStatus('sync');
+      // setSyncStatus('-');
+      // setSyncStatus('2024-05-24 10:05:34');
+      console.log(e)
+    } finally {
+    }
+  };
 
   return {
     loading: false,
@@ -163,12 +175,7 @@ const useDocumentState = create<{
       updateDocumentList(list);
       updateDirList(curPath);
 
-      try {
-        const { result } = await getSyncStatus(); // {result: {status: '2024-04-13 12:34:12'}}
-        setSyncStatus(result?.status || '');
-      } catch (e) {
-        console.log(e);
-      }
+      getSyncStatusFn();
     },
     // ファイルのアップロード
     uploadFile: async (files: FileList, dirPath: string) => {
@@ -221,18 +228,7 @@ const useDocumentState = create<{
         };
       });
     },
-    getSyncStatus: async () => {
-      try {
-        const { result } = await getSyncStatus();
-        setSyncStatus(result);
-      } catch (e) {
-        // setSyncStatus('sync');
-        // setSyncStatus('-');
-        // setSyncStatus('2024-05-24 10:05:34');
-        console.log(e)
-      } finally {
-      }
-    }
+    getSyncStatus: getSyncStatusFn
   };
 });
 
