@@ -141,8 +141,8 @@ const useDocumentState = create<{
         console.log(e);
         list = [];
       } finally {
-        getSyncStatus();
-        // console.log(list)
+        const { result } = await getSyncStatus(); // {result: {status: '2024-04-13 12:34:12'}}
+        setSyncStatus(result?.status || '');
       }
 
       // add prev folder
