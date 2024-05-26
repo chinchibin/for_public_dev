@@ -41,7 +41,7 @@ const DocumentPage: React.FC = () => {
   }, [documentList, setBtnVisible]);
 
   const getCurPath = () => {
-    let curPath = dirList.map((item) => {
+    const curPath = dirList.map((item) => {
       return item.name;
     });
     return curPath.join('/');
@@ -58,8 +58,6 @@ const DocumentPage: React.FC = () => {
   // }, [recognizeFile, loading]);
 
   const onDropFile = async (e: React.DragEvent<HTMLInputElement>) => {
-    e.preventDefault();    
-
     try {
       e.preventDefault();
 
@@ -67,8 +65,8 @@ const DocumentPage: React.FC = () => {
 
       const searchFile = async (entry: FileSystemEntry) => {
         if (entry.isFile) {
-          const file = await new Promise((resolve) => {
-            entry.file((file) => {
+          const file: File = await new Promise((resolve) => {            
+            (entry as FileSystemFileEntry).file((file) => {
               Object.defineProperty(file, "webkitRelativePath", {
                 value: entry.fullPath.slice(1),
               });
@@ -77,16 +75,16 @@ const DocumentPage: React.FC = () => {
           });
           dt.items.add(file);
         } else if (entry.isDirectory) {
-          const dirReader = entry.createReader();
-          let allEntries = [];
-          const getEntries = () =>
+          const dirReader = (entry as FileSystemDirectoryEntry).createReader();
+          let allEntries: FileSystemEntry[] = [];
+          const getEntries = (): Promise<FileSystemEntry[]> =>
             new Promise((resolve) => {
               dirReader.readEntries((entries) => {
                 resolve(entries);
               });
             });
           const readAllEntries = async () => {
-            const entries = await getEntries();
+            const entries: FileSystemEntry[] = await getEntries();
             if (entries.length > 0) {
               allEntries = [...allEntries, ...entries];
               await readAllEntries();
