@@ -193,8 +193,8 @@ const App: React.FC = () => {
   }, [pathname, getConversationTitle]);
 
   const showLeftRightPanel = () => {
-    let list = ['/document']; // left and right panel isn't show
-    return !list.some(path => path === pathname);
+    const list = ['/document']; // left and right panel isn't show    
+    return !list.some(path => path.toLowerCase() === pathname.toLowerCase());
   };
 
   const appStateContext = useContext(AppStateContext)
@@ -296,7 +296,7 @@ const App: React.FC = () => {
           {/* label を真ん中にするためのダミーのブロック */}
           <div className="w-10" />
         </header>
-
+            
         {showLeftRightPanel() && (<>
           <div
             className={`fixed -left-64 top-20 z-10 transition-all lg:left-0 lg:z-10 ${isOpenDrawer ? 'left-0' : '-left-64'}`}>

@@ -7,7 +7,7 @@ export const handler = async (
   try {
     const userId: string =event.requestContext.authorizer!.claims['cognito:username'];
     const req: UpdatePromptRequest = JSON.parse(event.body!);
-    await deletePrompt(userId,req.uuid,req.createdDate,req.type);
+    await deletePrompt(userId,req.uuid,process.env.TABLE_NAME!, req.createdDate,req.type);
     return {
       statusCode: 204,
       headers: {

@@ -37,6 +37,8 @@ export class Rag extends Construct {
     let kendraIndexArn: string;
     let kendraIndexId: string;
     let dataSourceBucket: s3.IBucket | null = null;
+    let datasourceId: string;
+    let datasourceArn: string;
 
     if (kendraIndexArnInCdkContext) {
       // 既存の Kendra Index を利用する場合
@@ -45,6 +47,8 @@ export class Rag extends Construct {
         kendraIndexArnInCdkContext,
         'index'
       );
+      datasourceId = ''
+      datasourceArn = ''
       // 既存の S3 データソースを利用する場合は、バケット名からオブジェクトを生成
       if (kendraDataSourceBucketName) {
         dataSourceBucket = s3.Bucket.fromBucketName(
@@ -98,8 +102,7 @@ export class Rag extends Construct {
 
       const corsRule = [{
         allowedMethods: [s3.HttpMethods.PUT],
-        allowedOrigins: ['*'],
-      
+        allowedOrigins: ['*'],      
         allowedHeaders: ['*'],
         exposedHeaders: [],
       }];
@@ -150,7 +153,7 @@ export class Rag extends Construct {
         })
       );
 
-      new kendra.CfnDataSource(this, 'S3DataSource', {
+      const datasource = new kendra.CfnDataSource(this, 'S3DataSource', {
         indexId: index.ref,
         type: 'S3',
         name: 's3-data-source',
@@ -163,7 +166,13 @@ export class Rag extends Construct {
           },
         },
       });
+      datasourceId = datasource.ref;
+      datasourceArn = Token.asString(datasource.getAtt('Arn'));
+
     }
+
+    
+    
 
     // RAG 関連の API を追加する
     // Lambda
@@ -191,10 +200,25 @@ export class Rag extends Construct {
       runtime: Runtime.NODEJS_18_X,
       entry: './lambda/listS3Objects.ts',
       timeout: Duration.minutes(15),
+      environment: {
+        BucketName: dataSourceBucket!.bucketName,
+      },
+    });
+    if (dataSourceBucket) {
+      dataSourceBucket.grantRead(listS3ObjectsFunction);
+    }
+
+    const deleteS3ObjectsFunction = new NodejsFunction(this, 'deleteObjects', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/deleteS3Objects.ts',
+      timeout: Duration.minutes(15),
+      environment: {
+        BucketName: dataSourceBucket!.bucketName,
+      },
     });
 
     if (dataSourceBucket) {
-      dataSourceBucket.grantRead(listS3ObjectsFunction);
+      dataSourceBucket.grantReadWrite(deleteS3ObjectsFunction);
     }
 
     const uploadS3ObjectFunction = new NodejsFunction(this, 'uploadS3Object', {
@@ -220,6 +244,44 @@ export class Rag extends Construct {
       dataSourceBucket.grantPut(getSignedUrlFunction);
     }
 
+    const syncDatasourceFunction = new NodejsFunction(this, 'syncDatasource', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/syncDatasource.ts',
+      timeout: Duration.minutes(15),
+      environment: {
+        KendraIndexId: kendraIndexId,
+        DataSourceId: datasourceId,
+      },
+    });
+    console.log(kendraIndexArn)
+    console.log(datasourceArn)
+    syncDatasourceFunction.role?.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: ["*"],
+        actions: ['kendra:StartDataSourceSyncJob'],
+      })
+    );
+
+    const getSyncStatusFunction = new NodejsFunction(this, 'getSyncStatus', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/getSyncStatus.ts',
+      timeout: Duration.minutes(15),
+      environment: {
+        KendraIndexId: kendraIndexId,
+        DataSourceId: datasourceId,
+      },
+    });
+    getSyncStatusFunction.role?.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: ["*"],
+        actions: ['kendra:ListDataSourceSyncJobs'],
+      })
+    );
+
+
+    
 
     const retrieveFunction = new NodejsFunction(this, 'Retrieve', {
       runtime: Runtime.NODEJS_18_X,
@@ -282,6 +344,14 @@ export class Rag extends Construct {
       commonAuthorizerProps
     );
 
+    const deleteS3ObjectsResource = ragResource.addResource('deleteS3Objects');
+    // POST: /rag/deleteS3Objects
+    deleteS3ObjectsResource.addMethod(
+      'POST',
+      new LambdaIntegration(deleteS3ObjectsFunction),
+      commonAuthorizerProps
+    );
+
     const uploadS3ObjectResource = ragResource.addResource('uploadS3Object');
     // POST: /rag/uploadS3Object
     uploadS3ObjectResource.addMethod(
@@ -295,6 +365,22 @@ export class Rag extends Construct {
     getPreSignedUrlResource.addMethod(
       'POST',
       new LambdaIntegration(getSignedUrlFunction),
+      commonAuthorizerProps
+    );
+
+    const syncDatasourceResource = ragResource.addResource('syncDatasource');
+    // POST: /rag/syncDatasource
+    syncDatasourceResource.addMethod(
+      'POST',
+      new LambdaIntegration(syncDatasourceFunction),
+      commonAuthorizerProps
+    );
+
+    const getSyncStatusResource = ragResource.addResource('getSyncStatus');
+    // POST: /rag/getSyncStatus
+    getSyncStatusResource.addMethod(
+      'POST',
+      new LambdaIntegration(getSyncStatusFunction),
       commonAuthorizerProps
     );
 

@@ -9,7 +9,7 @@ export const handler = async (
   try {
     const userId: string =event.requestContext.authorizer!.claims['cognito:username'];
     const req: UpdatePromptRequest = JSON.parse(event.body!);
-    const prompt = await updatePrompt(userId,req.uuid,req.createdDate,req.content,req.type);
+    const prompt = await updatePrompt(userId,req.uuid,process.env.TABLE_NAME!, req.createdDate,req.content,req.type);
     return {
       statusCode: 200,
       headers: {

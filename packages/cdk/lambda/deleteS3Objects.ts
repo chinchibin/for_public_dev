@@ -1,16 +1,21 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { CreatePromptsRequest } from 'generative-ai-use-cases-jp';
-import { batchCreatePrompts } from './repository';
+import { deleteS3Object, deleteFolder } from './repository';
+import { DeleteS3Object } from 'generative-ai-use-cases-jp';
 
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const req: CreatePromptsRequest = JSON.parse(event.body!);
-    const userId: string =
-      event.requestContext.authorizer!.claims['cognito:username'];
-    console.log('request:', req)
-    const prompts = await batchCreatePrompts(process.env.TABLE_NAME!, req.prompts, userId);
+    const req: DeleteS3Object = JSON.parse(event.body!);
+    for (const prefix of req.prompts.prefixes) {
+        if (prefix.endsWith('/')){          
+          await deleteFolder(process.env.BucketName!, prefix.slice(0, -1))
+        }
+        else{
+          await deleteS3Object(process.env.BucketName!, prefix)
+        }
+        
+    }
 
     return {
       statusCode: 200,
@@ -19,7 +24,7 @@ export const handler = async (
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
-        prompts,
+        'result': 'delete ok!',
       }),
     };
   } catch (error) {

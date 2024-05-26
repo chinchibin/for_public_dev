@@ -1,16 +1,14 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { CreatePromptsRequest } from 'generative-ai-use-cases-jp';
-import { batchCreatePrompts } from './repository';
+import { syncDatasource } from './repository';
+
 
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const req: CreatePromptsRequest = JSON.parse(event.body!);
-    const userId: string =
-      event.requestContext.authorizer!.claims['cognito:username'];
-    console.log('request:', req)
-    const prompts = await batchCreatePrompts(process.env.TABLE_NAME!, req.prompts, userId);
+    const indexId = process.env.KendraIndexId!
+    const datasourceId = process.env.DataSourceId!
+    await syncDatasource(indexId, datasourceId);    
 
     return {
       statusCode: 200,
@@ -19,7 +17,7 @@ export const handler = async (
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
-        prompts,
+        'result': 'sync ok!',
       }),
     };
   } catch (error) {

@@ -7,7 +7,7 @@ export const handler = async (
   try {
     const userId: string =
       event.requestContext.authorizer!.claims['cognito:username'];
-    const prompts = await listPrompts(userId);
+    const prompts = await listPrompts(process.env.TABLE_NAME!, userId);
 
     return {
       statusCode: 200,

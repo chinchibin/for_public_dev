@@ -9,18 +9,20 @@ import {
 } from 'generative-ai-use-cases-jp';
 import * as crypto from 'crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { S3Client, ListObjectsV2Command, PutObjectCommandInput, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectCommand,  ListObjectsV2Command, PutObjectCommandInput, PutObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import {
-  BatchWriteCommand,
-  DeleteCommand,
+  BatchWriteCommand,  
   DynamoDBDocumentClient,
   PutCommand,
+  DeleteCommand,
   QueryCommand,
   TransactWriteCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import { S3Object } from 'generative-ai-use-cases-jp/src/s3';
+import { DataSourceSyncStatus, S3Object } from 'generative-ai-use-cases-jp/src/s3';
+import { Kendra, ListDataSourceSyncJobsCommand, ListDataSourceSyncJobsCommandInput, StartDataSourceSyncJobResponse } from '@aws-sdk/client-kendra';
+
 
 const TABLE_NAME: string = process.env.TABLE_NAME!;
 const dynamoDb = new DynamoDBClient({});
@@ -28,7 +30,7 @@ const dynamoDbDocument = DynamoDBDocumentClient.from(dynamoDb);
 
 const s3 = new S3Client({});
 const bucketName = 'generativeaiusecasesstack-ragdatasourcebucket09187-no7y7ozm2zof';
-
+const kendra = new Kendra({});
 
 export const createChat = async (_userId: string): Promise<Chat> => {
   const userId = `user#${_userId}`;
@@ -163,6 +165,7 @@ export const batchCreateMessages = async (
 };
 
 export const batchCreatePrompts = async (
+  table_name: string,
   prompts: ToBeRecordedPrompt[],
   _userId: string,
 ): Promise<RecordedPrompt[]> => {
@@ -185,7 +188,7 @@ export const batchCreatePrompts = async (
   await dynamoDbDocument.send(
     new BatchWriteCommand({
       RequestItems: {
-        ['Prompt']: items.map((m) => {
+        [table_name]: items.map((m) => {
           return {
             PutRequest: {
               Item: m,
@@ -201,6 +204,7 @@ export const batchCreatePrompts = async (
 export const updatePrompt = async (
   _userId: string,
   uuid: string,
+  table_name: string,
   createdDate:string,
   content: string,
   type:string,
@@ -209,7 +213,7 @@ export const updatePrompt = async (
   const newUserId= type === "1" ? "@@all" : userId;
   const res = await dynamoDbDocument.send(
     new UpdateCommand({
-      TableName: 'Prompt',
+      TableName: table_name,
       Key: {
         userId: newUserId,
         createdDate:createdDate,
@@ -233,6 +237,7 @@ export const updatePrompt = async (
 export const deletePrompt = async (
   _userId: string,
   uuid: string,
+  table_name: string,
   createdDate:string,
   type:string,
 ): Promise<void> => {
@@ -240,7 +245,7 @@ export const deletePrompt = async (
   const newUserId= type === "1" ? "@@all" : userId;
   await dynamoDbDocument.send(
     new DeleteCommand({
-      TableName: 'Prompt',
+      TableName: table_name,
       Key: {
         userId: newUserId,
         createdDate: createdDate,
@@ -256,14 +261,14 @@ export const deletePrompt = async (
   );  
 };
 
-export const listPrompts = async (_userId: string): Promise<RecordedPrompt[]> => {
+export const listPrompts = async (table_name: string, _userId: string): Promise<RecordedPrompt[]> => {
   const userId = `prompt#${_userId}`;
   const generalId = "@@all"; // 假设 "@@all" 用来标识通用提示
  
   // 执行第一次查询：基于用户ID或通用ID
   const res1 = await dynamoDbDocument.send(
     new QueryCommand({
-      TableName: 'Prompt',
+      TableName: table_name,
       KeyConditionExpression: '#userId = :userId',
       ExpressionAttributeNames: {
         '#userId': 'userId',
@@ -274,7 +279,7 @@ export const listPrompts = async (_userId: string): Promise<RecordedPrompt[]> =>
     }));
   const res2 = await dynamoDbDocument.send(
     new QueryCommand({
-      TableName: 'Prompt',
+      TableName: table_name,
       KeyConditionExpression: '#userId = :userId',
       ExpressionAttributeNames: {
         '#userId': 'userId',
@@ -507,9 +512,9 @@ export const deleteShareId = async (_shareId: string): Promise<void> => {
 };
 
 
-export const listS3Bucket = async (prefix: string): Promise<S3Object[]> => {
+export const listS3Bucket = async (prefix: string): Promise<S3Object[] | undefined> => {
   const command = new ListObjectsV2Command({
-    Bucket: bucketName,
+    Bucket: process.env.BucketName,
     // The default and maximum number of keys returned is 1000. This limits it to
     // one for demonstration purposes.
     Prefix: prefix + '/',
@@ -557,7 +562,7 @@ export const listS3Bucket = async (prefix: string): Promise<S3Object[]> => {
   } catch (err) {
     console.error(err);
   }
-  
+  return undefined
 };
 
 
@@ -571,7 +576,111 @@ export const uploadS3Object = async (key: string, file: any) => {
     }
     
     const putCommand = new PutObjectCommand(putParams);
-    await s3.send(putCommand);
-    
+    await s3.send(putCommand);    
 
 }
+
+export const deleteS3Object = async (bucketName: string, prefix: string) => {
+  console.log(prefix)
+  const command = new DeleteObjectCommand({
+    Bucket: bucketName, 
+    Key: prefix, 
+  });
+  console.log('bucketName ->', bucketName);
+  console.log('prefix ->', prefix);
+  
+  await s3.send(command)
+}
+
+export const deleteFolder = async(bucketName: string, path: string) => {
+  console.log(path)
+  let count = 0; // number of files deleted
+  async function recursiveDelete(token: string | undefined) {
+    // get the files
+    const listCommand = new ListObjectsV2Command({
+      Bucket: bucketName, 
+      Prefix: path,
+      ContinuationToken: token
+    });
+
+    let list = await s3.send(listCommand);
+    if (list.KeyCount) { // if items to delete
+      // delete the files
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: bucketName,
+        Delete: {
+          Objects: list.Contents!.map((item) => ({ Key: item.Key })),
+          Quiet: false,
+        },
+      });      
+      let deleted = await s3.send(deleteCommand);
+      
+      if (deleted.Errors) {
+        deleted.Errors.map((error) => console.log(`${error.Key} could not be deleted - ${error.Code}`));
+      }
+
+      count += deleted.Deleted?.length??0
+    }
+    // repeat if more files to delete
+    if (list.NextContinuationToken) {
+      recursiveDelete(list.NextContinuationToken);
+    }
+    
+    console.log(`${count} file(s) is deleted! `)
+    return `delete OK.`;
+  };
+  // start the recursive function
+  return recursiveDelete(undefined);
+
+}
+
+
+export const getSyncStatus = async (indexId: string, dataSourceId: string): Promise<DataSourceSyncStatus> =>{
+  dataSourceId = dataSourceId.replace('|' + indexId, '')
+  console.log('IndexId ->', indexId);
+  console.log('DataSourceId ->', dataSourceId);
+
+  const input: ListDataSourceSyncJobsCommandInput = {
+    Id: dataSourceId,
+    IndexId: indexId,
+  };
+
+  const result : DataSourceSyncStatus = { status: '-'};
+  const command = new ListDataSourceSyncJobsCommand(input);  
+  const response = await kendra.send(command);
+  
+  if (response.History && response.History.length > 0){
+    const history = response.History!
+    console.log(history)
+    if(history.filter((x) => (x.Status === 'INCOMPLETE') || x.Status!.startsWith('SYNC'))
+      .length > 0){
+      result.status = 'sync'
+    }
+    else{
+      result.status = history[0].EndTime!.toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" }) 
+    }
+      
+  }
+
+  return result;
+}
+
+export const syncDatasource = async (indexId: string, dataSourceId: string) => { 
+ 
+  try {
+    dataSourceId = dataSourceId.replace('|' + indexId, '')
+    console.log('IndexId ->', indexId);
+    console.log('DataSourceId ->', dataSourceId);
+
+    const dataSourceSyncResponse: StartDataSourceSyncJobResponse = await kendra.startDataSourceSyncJob({
+      Id: dataSourceId,
+      IndexId: indexId,
+    }); 
+
+   
+    return dataSourceSyncResponse;
+  } catch (error) {
+    console.error("error:", error);
+    throw error;
+  }
+};

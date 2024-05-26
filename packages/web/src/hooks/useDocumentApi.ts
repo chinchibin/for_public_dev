@@ -32,7 +32,7 @@ const useDocumentApi = () => {
     },
 
     uploadFile: async (file: File, dirPath: string) => {
-      const path = decodeURIComponent(dirPath + '/' + file.name)
+      const path = decodeURIComponent(dirPath + file.name)
       const res = await http.post('rag/getPreSignedUrl', { fileName: path })
 
       const formData = new FormData()

@@ -9,3 +9,12 @@ export type S3Object = {
   lastModified: string;
   
 };
+
+
+export type DeleteS3ObjectPrefix = {
+  prefixes: string[],
+}
+
+export type DataSourceSyncStatus = {
+  status: string,
+}

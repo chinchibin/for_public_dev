@@ -58,11 +58,62 @@ const DocumentPage: React.FC = () => {
   // }, [recognizeFile, loading]);
 
   const onDropFile = async (e: React.DragEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (!files || files.length === 0) return;
+    e.preventDefault();    
+
     try {
-      await uploadCommon(files);
+      e.preventDefault();
+
+      const dt = new DataTransfer();
+
+      const searchFile = async (entry: FileSystemEntry) => {
+        if (entry.isFile) {
+          const file = await new Promise((resolve) => {
+            entry.file((file) => {
+              Object.defineProperty(file, "webkitRelativePath", {
+                value: entry.fullPath.slice(1),
+              });
+              resolve(file);
+            });
+          });
+          dt.items.add(file);
+        } else if (entry.isDirectory) {
+          const dirReader = entry.createReader();
+          let allEntries = [];
+          const getEntries = () =>
+            new Promise((resolve) => {
+              dirReader.readEntries((entries) => {
+                resolve(entries);
+              });
+            });
+          const readAllEntries = async () => {
+            const entries = await getEntries();
+            if (entries.length > 0) {
+              allEntries = [...allEntries, ...entries];
+              await readAllEntries();
+            }
+          };
+          await readAllEntries();
+          for (const entry of allEntries) {
+            await searchFile(entry);
+          }
+        }
+      };
+
+      const items = e.dataTransfer.items;
+      const calcFullPathPerItems = Array.from(items).map((item) => {
+        return new Promise((resolve) => {
+          const entry = item.webkitGetAsEntry();
+          // nullの時は何もしない
+          if (!entry) {
+            resolve;
+            return;
+          }
+          resolve(searchFile(entry));
+        });
+      });
+      await Promise.all(calcFullPathPerItems);
+      
+      await uploadCommon(dt.files);
       // refresh page
       // gotoDir(documentList[0]?.dirPath);
       gotoDir(getCurPath());

@@ -183,7 +183,8 @@ const useDocumentState = create<{
       let promiseArr = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        promiseArr.push(uploadFile(file, dirPath));
+        const path = file.webkitRelativePath.replace(file.name, '')
+        promiseArr.push(uploadFile(file, dirPath + (path === ''? '/': '/' + path)));
       }
       return Promise.all(promiseArr).then((resultArr) => {
         let isOk = resultArr.every((res) => {

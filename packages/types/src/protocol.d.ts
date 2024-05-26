@@ -10,7 +10,8 @@ import {
 } from './prompt';
 import{
   S3Object,
-  S3ObjectPath
+  S3ObjectPath,
+  DeleteS3ObjectPrefix
 } from './s3'
 
 import { Chat } from './chat';
@@ -47,6 +48,10 @@ export type CreatePromptsResponse = {
 
 export type ListPromptsResponse = {
   prompts: RecordedPrompt[];
+};
+
+export type DeleteS3Object = {
+  prompts: DeleteS3ObjectPrefix;
 };
 
 export type ListS3ObjectsRequest = {
