@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
+import userLogApi from './useLogApi';
 
-let testIdx = 0;
 
 const useLogState = create<{
+  loading: boolean;
+  sum: number,
   logList: {
     bango: String,
     email: String,
@@ -12,6 +14,28 @@ const useLogState = create<{
   }[];
   getData: (value: any) => void;
 }>((set, _get) => {
+
+  const showLoading = () => {
+    set(() => ({
+      loading: true,
+    }));
+  };
+  const hideLoading = () => {
+    set(() => ({
+      loading: false,
+    }));
+  };
+
+  const setSum = (sum: number) => {
+    set(() => ({
+      sum
+    }));
+  };
+
+  // const api = useFileApi();
+  const {
+    listS3Objects,
+  } = userLogApi();
 
   const updateLogList = (list: any[]) => {
     set((_state) => {
@@ -22,32 +46,27 @@ const useLogState = create<{
   };
 
   return {
+    loading: false,
+    sum: 0,
     logList: [],
-    getData: async (data: object) => {
+    getData: async (params: object) => {
+      showLoading();
       let list: any[] = [];
-      console.log(data);
+      console.log(params);
 
       try {
-        // --------------- mock data start ---------------
-        await new Promise(resolve => setTimeout(resolve, 200));
-        // const res = await http.post('chats', {});
+        // await new Promise(resolve => setTimeout(resolve, 200));
+        const res = await listS3Objects(params);
+        const { prompts, sum } = res;
+        list = prompts || [];
 
-        for (let i = 1; i < 11; i++) {
-          let id = i.toString().padStart(4, '0');
-          list.push({
-            bango: `${id}`,
-            email: `test.${id}@miraito-one.com`,
-            createdTime: '2024/04/15 14:08:23',
-            content: '選択された場合にメールアドレスのテキストボックスを有効にする\r\n選択された場合に社員番号のテキストボックスを無効にする',
-          });
-          testIdx++;
-        }
-        // --------------- mock data end ---------------
-
+        setSum(sum);
+        updateLogList(list);
       } catch (e) {
         console.log(e);
         list = [];
       } finally {
+        hideLoading();
       }
       updateLogList(list);
     },
@@ -56,6 +75,8 @@ const useLogState = create<{
 
 const useLog = () => {
   const {
+    loading,
+    sum,
     logList,
     getData,
   } = useLogState();
@@ -65,6 +86,8 @@ const useLog = () => {
   }, [getData]);
 
   return {
+    loading,
+    sum,
     logList,
     search: getData,
   };

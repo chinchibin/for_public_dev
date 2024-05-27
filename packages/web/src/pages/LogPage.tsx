@@ -2,27 +2,11 @@ import React, { useState } from 'react';
 import useLog from '../hooks/useLog';
 
 import Pagination from '../components/Pagination';
+import { Text, Loader } from '@aws-amplify/ui-react';
 import { ChoiceGroup, TextField } from "@fluentui/react";
 
-
-// type StateType = {
-//   pageNo: number;
-//   setPageNo: (c: number) => void;
-// };
-// const useLogPageState = create<StateType>((set) => {
-//   return {
-//     pageNo: '',
-//     setPageNo: (n: number) => {
-//       set(() => ({
-//         pageNo: n,
-//       }));
-//     },
-//   };
-// });
-
-
 const LogPage: React.FC = () => {
-  const { logList, search } = useLog();
+  const { logList, search, loading, sum } = useLog();
 
   const [torokuDt, setTorokuDt] = useState("");
   const [bango, setBango] = useState("");
@@ -31,8 +15,6 @@ const LogPage: React.FC = () => {
   const [selectedKey, setSelectedKey] = useState<string | undefined>('0');
   const [selectedSubKey, setSelectedSubKey] = useState<string | undefined>('0');
   const [pageNo, setPageNo] = useState<number>(1);
-
-  console.log(pageNo);
 
   // ========== search ==========
 
@@ -76,7 +58,7 @@ const LogPage: React.FC = () => {
       data.email = email;
     }
     search(data);
-    console.log('search', data);
+    // console.log('search', data);
   }
 
   // ========== pagination ==========
@@ -87,12 +69,19 @@ const LogPage: React.FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-12">
+      <div className="grid grid-cols-12 relative">
+      {loading && <div className="absolute w-full h-full z-10 pt-20" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
+          <div className="grid grid-cols-1 justify-items-center gap-4">
+            <Text className="mt-12 text-center">Loading...</Text>
+            <Loader width="5rem" height="5rem" />
+          </div>
+        </div>}
+
         <div className="invisible col-span-12 my-0 flex h-0 items-center justify-center text-xl font-semibold lg:visible lg:my-5 lg:h-min print:visible print:my-5 print:h-min">
           利用ログ一覧
         </div>
         <div className="col-span-12 col-start-1 mx-2 lg:col-span-10 lg:col-start-2 xl:col-span-10 xl:col-start-2">
-          <div className="w-2/5">
+          <div className="w-4/5">
             <div>
               <ChoiceGroup
                 options={options[0]}
@@ -190,7 +179,7 @@ const LogPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <Pagination sum={305} pageSize={0} pageNo={1} onSkipTo={skipToPage}></Pagination>
+          <Pagination sum={sum} pageSize={30} pageNo={pageNo} onSkipTo={skipToPage}></Pagination>
         </div>
       </div>
     </>

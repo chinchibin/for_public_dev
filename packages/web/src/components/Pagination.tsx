@@ -61,11 +61,7 @@ const Pagination: React.FC<Props> = (props) => {
         return pageArr;
     }
 
-    console.log('------render------', pageNo);
-
     let pageArr = getPageRange(pageNo, pageTotal);
-
-
     const skipTo = (pageNo: number, e: React.MouseEvent<HTMLInputElement>) => {
         if (pageNo < 1) pageNo = 1;
         else if (pageNo > pageTotal) pageNo = pageTotal;
@@ -74,7 +70,7 @@ const Pagination: React.FC<Props> = (props) => {
     };
 
     return (
-        <div className="flex justify-end items-center text-center">
+        <div className={"flex justify-end items-center text-center " + (props.sum > 0 ? '' : 'hidden')}>
             <span className="w-5 mx-1 cursor-pointer select-none hover:text-blue-700" onClick={(e: React.MouseEvent<HTMLInputElement>) => { skipTo(1, e) }}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5" />
