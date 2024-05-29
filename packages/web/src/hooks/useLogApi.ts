@@ -6,8 +6,8 @@ const useLogApi = () => {
 
 
   return {
-    listS3Objects: async (param: object) => {
-      const res = await http.post('rag/listS3Objects', { prompts: { ...param } });
+    searchLog: async (param: object) => {      
+      const res = await http.post('log/searchLog', { prompts: { ...param } });
       return res.data;
     },
   }

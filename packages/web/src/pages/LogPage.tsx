@@ -41,11 +41,12 @@ const LogPage: React.FC = () => {
 
 
   const doSearch = () => {
-    let data = {
+    const data = {
       torokuDt: '',
       bango: '',
       email: '',
-      content: ''
+      content: '',
+      page: pageNo.toString(),
     };
     // selectedKey:0-社員番号, 1-email; value-入力値
     if (selectedKey === '0') {
@@ -57,14 +58,13 @@ const LogPage: React.FC = () => {
     } else if (selectedKey === '1' && selectedSubKey === '1') {
       data.email = email;
     }
-    search(data);
-    // console.log('search', data);
+    search(data);    
   }
 
   // ========== pagination ==========
 
-  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {
-    setPageNo(cur);
+  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {    
+    setPageNo(cur);    
   };
 
   return (
@@ -162,7 +162,7 @@ const LogPage: React.FC = () => {
                   return (
                     <tr key={'tr_' + index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
                       <td className="pl-2 border border-gray-300" style={{ width: '180px' }}>
-                        {data.createdTime}
+                        {data.torokuDt}
                       </td>
                       <td className="pl-2 h-10 border border-gray-300" style={{ width: '90px' }}>
                         {data.bango}
@@ -179,7 +179,7 @@ const LogPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <Pagination sum={sum} pageSize={30} pageNo={pageNo} onSkipTo={skipToPage}></Pagination>
+          <Pagination sum={sum} pageSize={10} pageNo={pageNo} onSkipTo={skipToPage}></Pagination>
         </div>
       </div>
     </>

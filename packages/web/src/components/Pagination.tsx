@@ -4,7 +4,7 @@ import { BaseProps } from '../@types/common';
 // MEMO: 現在は Error しか実装していない
 type Props = BaseProps & {
     sum: number;
-    pageSize?: number;
+    pageSize: number;
     pageNo?: number,
     onSkipTo?: (pageNo: number, e: React.MouseEvent<HTMLInputElement>) => void;
 };
@@ -14,16 +14,15 @@ const Pagination: React.FC<Props> = (props) => {
     const [pageNo, setPageNo] = useState<number>(props.pageNo || 1);
 
     const pageTotal = useMemo(() => {
-        let { sum, pageSize } = props;
-        pageSize = pageSize ? pageSize : 10;
-        let pageTotal: number = Math.ceil(sum / pageSize);
+        const { sum, pageSize } = props;
+        const pageTotal: number = Math.ceil(sum / pageSize);
         return pageTotal;
     }, [props.sum, props.pageSize]);
 
-    let getPageRange = function (pageNo: number, pageSum: number) {
+    const getPageRange = function (pageNo: number, pageSum: number) {
         pageNo = pageNo || 1;
         let start = 1, end = pageSum;
-        let pageArr = [];  // 1 ...  4 5 6 7 8 9 10 11 12 13 ... 16
+        const pageArr = [];  // 1 ...  4 5 6 7 8 9 10 11 12 13 ... 16
 
         if (pageSum > 9) {
             if (pageNo < 5) {
@@ -61,7 +60,7 @@ const Pagination: React.FC<Props> = (props) => {
         return pageArr;
     }
 
-    let pageArr = getPageRange(pageNo, pageTotal);
+    const pageArr = getPageRange(pageNo, pageTotal);
     const skipTo = (pageNo: number, e: React.MouseEvent<HTMLInputElement>) => {
         if (pageNo < 1) pageNo = 1;
         else if (pageNo > pageTotal) pageNo = pageTotal;

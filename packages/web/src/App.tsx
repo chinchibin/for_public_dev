@@ -193,7 +193,7 @@ const App: React.FC = () => {
   }, [pathname, getConversationTitle]);
 
   const showLeftRightPanel = () => {
-    const list = ['/document']; // left and right panel isn't show    
+    const list = ['/document', '/log']; // left and right panel isn't show    
     return !list.some(path => path.toLowerCase() === pathname.toLowerCase());
   };
 

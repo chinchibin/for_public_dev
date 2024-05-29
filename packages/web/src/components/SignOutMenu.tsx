@@ -7,6 +7,7 @@ import Logout from '@mui/icons-material/Logout';
 import { useCallback } from 'react';
 import { Auth } from 'aws-amplify';
 import {ReactComponent as DocumentIcon} from '../assets/document.svg';
+import {ReactComponent as LogsIcon} from '../assets/logs.svg';
 
 export default function SignOutMenu({ label }: { label: string }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -59,18 +60,25 @@ export default function SignOutMenu({ label }: { label: string }) {
           horizontal: 'left',
         }}
       >
+        <MenuItem onClick={handleClose}>
+          <ListItemIcon>
+            <Logout fontSize="small" style={{ color: "var(--color-orange)" }} />
+          </ListItemIcon>
+          Log out
+        </MenuItem>
         <MenuItem onClick={() => { handleSkip('/document'); }}>
           <ListItemIcon>
             <DocumentIcon></DocumentIcon>
           </ListItemIcon>
           ドキュメント一覧
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={() => { handleSkip('/log'); }}>
           <ListItemIcon>
-            <Logout fontSize="small" style={{ color: "var(--color-orange)" }} />
-          </ListItemIcon>
-          Logout
+            <LogsIcon></LogsIcon>
+          </ListItemIcon>        
+          利用ログ一覧
         </MenuItem>
+        
       </Menu>
     </div>
   );

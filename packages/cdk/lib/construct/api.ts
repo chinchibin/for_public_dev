@@ -207,9 +207,17 @@ export class Api extends Construct {
       timeout: Duration.minutes(15),
       environment: {
         TABLE_NAME: table.tableName,
+        USERPOOL_ID: userPool.userPoolId,
       },
     });
     table.grantWriteData(createMessagesFunction);
+    
+    const cognitoPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+      resources: [userPool.userPoolArn],
+      actions: ['cognito-idp:ListUsers'],
+    });
+    createMessagesFunction.role?.addToPrincipalPolicy(cognitoPolicy);
 
 
     const createPromptsFunction = new NodejsFunction(this, 'CreatePrompts', {
@@ -252,7 +260,7 @@ export class Api extends Construct {
       },
     });
     table2.grantReadData(listPromptsFunction);
-
+    
     const updateChatTitleFunction = new NodejsFunction(
       this,
       'UpdateChatTitle',
@@ -352,6 +360,16 @@ export class Api extends Construct {
       },
     });
     table.grantReadWriteData(deleteShareId);
+
+    const searchLog = new NodejsFunction(this, 'searchLog', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: './lambda/searchLog.ts',
+      timeout: Duration.minutes(15),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+    table.grantReadWriteData(searchLog);
 
     // API Gateway
     const authorizer = new CognitoUserPoolsAuthorizer(this, 'Authorizer', {
@@ -548,6 +566,17 @@ export class Api extends Construct {
       new LambdaIntegration(deleteShareId),
       commonAuthorizerProps
     );
+
+    // SearchLog: /log
+    const logResource = api.root.addResource('log');
+    // POST: /log/searchLog
+    const searchLogResource = logResource
+        .addResource('searchLog');
+    searchLogResource.addMethod(
+      'POST',
+      new LambdaIntegration(searchLog),
+      commonAuthorizerProps,
+    )
 
     this.api = api;
     this.predictStreamFunction = predictStreamFunction;

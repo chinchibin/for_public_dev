@@ -1,20 +1,14 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { CreateMessagesRequest } from 'generative-ai-use-cases-jp';
-import { batchCreateMessages } from './repository';
+import { searchLog } from './repository';
+import { SearchLogRequest } from 'generative-ai-use-cases-jp';
 
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const req: CreateMessagesRequest = JSON.parse(event.body!);    
-    const userId: string =
-      event.requestContext.authorizer!.claims['cognito:username'];
-    
-    console.log(userId)
-    const userPoolId = process.env.USERPOOL_ID!;
-    console.log(userPoolId)
-    const chatId = event.pathParameters!.chatId!;
-    const messages = await batchCreateMessages(req.messages, userId, chatId, userPoolId);
+    const req: SearchLogRequest = JSON.parse(event.body!);    
+    console.log('REQ:' + event.body);
+    const prompts = await searchLog(process.env.TABLE_NAME!, req.prompts);
 
     return {
       statusCode: 200,
@@ -23,7 +17,7 @@ export const handler = async (
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
-        messages,
+        prompts,
       }),
     };
   } catch (error) {

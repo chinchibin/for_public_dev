@@ -7,10 +7,10 @@ const useLogState = create<{
   loading: boolean;
   sum: number,
   logList: {
-    bango: String,
-    email: String,
-    status: String,
-    role: Number,
+    bango: string,
+    email: string,
+    status: string,
+    role: number,
   }[];
   getData: (value: any) => void;
 }>((set, _get) => {
@@ -32,9 +32,8 @@ const useLogState = create<{
     }));
   };
 
-  // const api = useFileApi();
   const {
-    listS3Objects,
+    searchLog,
   } = userLogApi();
 
   const updateLogList = (list: any[]) => {
@@ -55,12 +54,11 @@ const useLogState = create<{
       console.log(params);
 
       try {
-        // await new Promise(resolve => setTimeout(resolve, 200));
-        const res = await listS3Objects(params);
-        const { prompts, sum } = res;
-        list = prompts || [];
+        const res = await searchLog(params);
+        const { prompts } = res;
+        list = prompts.items || [];
 
-        setSum(sum);
+        setSum(prompts.sum);
         updateLogList(list);
       } catch (e) {
         console.log(e);

@@ -6,9 +6,11 @@ import {
   ToBeRecordedPrompt,
   ShareId,
   UserIdAndChatId,
+  SearchLogCondition,
 } from 'generative-ai-use-cases-jp';
 import * as crypto from 'crypto';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument,  paginateScan, ScanCommandInput, } from '@aws-sdk/lib-dynamodb';
 import { S3Client, DeleteObjectCommand,  ListObjectsV2Command, PutObjectCommandInput, PutObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import {
   BatchWriteCommand,  
@@ -22,15 +24,21 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { DataSourceSyncStatus, S3Object } from 'generative-ai-use-cases-jp/src/s3';
 import { Kendra, ListDataSourceSyncJobsCommand, ListDataSourceSyncJobsCommandInput, StartDataSourceSyncJobResponse } from '@aws-sdk/client-kendra';
+import { CognitoIdentityProviderClient, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider'
+import { Condition } from 'aws-cdk-lib/aws-stepfunctions';
 
 
 const TABLE_NAME: string = process.env.TABLE_NAME!;
 const dynamoDb = new DynamoDBClient({});
 const dynamoDbDocument = DynamoDBDocumentClient.from(dynamoDb);
+const ddbDocClient = DynamoDBDocument.from(
+  dynamoDb
+);
 
 const s3 = new S3Client({});
 const bucketName = 'generativeaiusecasesstack-ragdatasourcebucket09187-no7y7ozm2zof';
 const kendra = new Kendra({});
+const cognito = new CognitoIdentityProviderClient({});
 
 export const createChat = async (_userId: string): Promise<Chat> => {
   const userId = `user#${_userId}`;
@@ -122,18 +130,51 @@ export const listMessages = async (
   return res.Items as RecordedMessage[];
 };
 
+export const getCoNumber = async(userPoolId: string,  userId: string): Promise<string[]> => {
+  const input = {
+    "AttributesToGet": [
+      "custom:employee_number",
+      "email",
+    ],
+    "Filter": "username = \"" + userId + "\"",
+    "Limit": 1,    
+    "UserPoolId": userPoolId,
+  };
+
+  const command = new ListUsersCommand(input);
+  const res = await cognito.send(command);
+
+  let coNumber: string = ''
+  let email: string = ''
+  if (res.Users!  && res.Users.length > 0){
+    res.Users[0].Attributes?.forEach((attribute) => {
+      if (attribute.Name === 'email'){
+        email = attribute.Value!
+      }
+      else{
+        coNumber = attribute.Value!
+      }
+    })         
+  }
+
+  return [coNumber, email]
+}
+
 export const batchCreateMessages = async (
   messages: ToBeRecordedMessage[],
   _userId: string,
-  _chatId: string
+  _chatId: string,
+  _userPoolId: string,
 ): Promise<RecordedMessage[]> => {
   const userId = `user#${_userId}`;
   const chatId = `chat#${_chatId}`;
   const createdDate = Date.now();
   const feedback = 'none';
+  const coNumber = await getCoNumber(_userPoolId, _userId);
 
-  const items: RecordedMessage[] = messages.map(
-    (m: ToBeRecordedMessage, i: number) => {
+  const items: RecordedMessage[] = messages.map(    
+    (m: ToBeRecordedMessage, i: number) => {    
+      const createDateFormatted = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" })
       return {
         id: chatId,
         createdDate: `${createdDate + i}#0`,
@@ -144,6 +185,9 @@ export const batchCreateMessages = async (
         feedback,
         usecase: m.usecase,
         llmType: m.llmType ?? '',
+        coNumber: coNumber[0],
+        email: coNumber[1],
+        dateFormatted: createDateFormatted,
       };
     }
   );
@@ -632,6 +676,80 @@ export const deleteFolder = async(bucketName: string, path: string) => {
   // start the recursive function
   return recursiveDelete(undefined);
 
+}
+
+export const searchLog = async (tableName: string, condition: SearchLogCondition): Promise<any> => {
+  const paginatorConfig = {
+    client: ddbDocClient,
+    pageSize: 10,
+  } 
+  
+  const params: ScanCommandInput = {
+    ProjectionExpression: 'dateFormatted, coNumber, email, content',
+    TableName: tableName,
+    ExpressionAttributeNames: {
+      '#role' : 'role',
+    },
+    ExpressionAttributeValues: {
+      ":role": "user",
+    },
+    FilterExpression: '#role = :role '
+  }
+
+  if (condition.torokuDt){
+    params.FilterExpression += 'and begins_with(#date, :torokuDt)';
+    params.ExpressionAttributeValues![':torokuDt'] = condition.torokuDt
+    params.ExpressionAttributeNames!['#date'] = 'dateFormatted'
+  }
+  else if(condition.bango){
+    params.FilterExpression += 'and #bango = :bango';
+    params.ExpressionAttributeValues![':bango'] = condition.bango
+    params.ExpressionAttributeNames!['#bango'] = 'coNumber'
+  }
+  else if(condition.email){
+    params.FilterExpression += 'and #email = :email';
+    params.ExpressionAttributeValues![':email'] = condition.email
+    params.ExpressionAttributeNames!['#email'] = 'email'
+  }
+  else if(condition.content){
+    params.FilterExpression += 'and contains(#content, :content)';
+    params.ExpressionAttributeValues![':content'] = condition.content
+    params.ExpressionAttributeNames!['#content'] = 'content'
+  }
+
+  let allPage = 0;
+  const items: any[] = [];
+
+  if (!condition.torokuDt && !condition.bango &&
+      !condition.email && !condition.content
+  ){
+    console.log('0 count!')
+  }
+  else {
+    const paginator = paginateScan(paginatorConfig, params)
+    let pg = condition.page??'1'
+    const from = 10 * (Number(pg) - 1)
+    const to = 10 * Number(pg)
+    for await (const page of paginator){      
+      if (page.Items){
+        for (let li = 0; li < page.Items.length; li++) {
+          let index = allPage + li + 1
+          if(( index > from) && (index <= to)){
+            items.push({
+              'torokuDt': page.Items[li]['dateFormatted'],
+              'bango': page.Items[li]['coNumber'],
+              'email': page.Items[li]['email'],
+              'content': page.Items[li]['content'],
+            })
+          }
+        }
+      }
+      
+      allPage = allPage + (page.Count ?? 0)
+    }
+  }
+  
+  return {'sum': allPage, 'items': items}
 }
 
 

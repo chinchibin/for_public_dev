@@ -253,8 +253,6 @@ export class Rag extends Construct {
         DataSourceId: datasourceId,
       },
     });
-    console.log(kendraIndexArn)
-    console.log(datasourceArn)
     syncDatasourceFunction.role?.addToPrincipalPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -279,9 +277,6 @@ export class Rag extends Construct {
         actions: ['kendra:ListDataSourceSyncJobs'],
       })
     );
-
-
-    
 
     const retrieveFunction = new NodejsFunction(this, 'Retrieve', {
       runtime: Runtime.NODEJS_18_X,
