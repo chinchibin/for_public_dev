@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BaseProps } from '../@types/common';
 
 // MEMO: 現在は Error しか実装していない
@@ -10,8 +10,11 @@ type Props = BaseProps & {
 };
 
 const Pagination: React.FC<Props> = (props) => {
-
     const [pageNo, setPageNo] = useState<number>(props.pageNo || 1);
+
+    useEffect(()=>{
+        setPageNo(props.pageNo || pageNo);
+    }, [props.pageNo]);
 
     const pageTotal = useMemo(() => {
         const { sum, pageSize } = props;
