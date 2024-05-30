@@ -1,37 +1,21 @@
 import React, { useState } from 'react';
 import Pagination from '../components/Pagination';
 import { ChoiceGroup, TextField } from "@fluentui/react";
+import { Text, Loader } from '@aws-amplify/ui-react';
 import useUser from '../hooks/useUser';
 
-// type StateType = {
-//   pageNo: number;
-//   setPageNo: (c: number) => void;
-// };
-// const useUserPageState = create<StateType>((set) => {
-//   return {
-//     pageNo: '',
-//     setPageNo: (n: number) => {
-//       set(() => ({
-//         pageNo: n,
-//       }));
-//     },
-//   };
-// });
-
-
 const UserPage: React.FC = () => {
-  const { userList, search } = useUser();
+  const { userList, search, sum, loading } = useUser();
 
-  const [openDialog, setOpenDialog] = useState(true);
+  // const [openDialog, setOpenDialog] = useState(true);
   // const [dialogTitle, setDialogTitle] = useState("ユーザ詳細");
+  // const [itemBango, setItemBango] = useState("");
 
-  const [itemBango, setItemBango] = useState("");
   const [bango, setBango] = useState("");
   const [email, setEmail] = useState("");
   const [selectedKey, setSelectedKey] = useState<string | undefined>('0');
   const [pageNo, setPageNo] = useState<number>(1);
 
-  console.log(openDialog, itemBango, pageNo);
   // ========== search ==========
 
   const options: any[] = [
@@ -43,11 +27,11 @@ const UserPage: React.FC = () => {
     setSelectedKey(option.key);
   }, []);
 
-
-  const doSearch = () => {
+  const doSearch = (curPage: number) => {
     let data = {
       bango: '',
       email: '',
+      page: curPage.toString(),
     };
     // selectedKey:0-社員番号, 1-email; value-入力値
     if (selectedKey === '0') {
@@ -60,20 +44,17 @@ const UserPage: React.FC = () => {
   }
 
   // ========== add / edit ==========
-
-  const showDialog = (type: string, bango?: string) => {
-    setOpenDialog(true);
-    if (type === 'edit') {
-      setItemBango(bango || '');
-    }
-    // setDialogTitle('');
-  }
-
+  // const showDialog = (type: string, bango?: string) => {
+  //   setOpenDialog(true);
+  //   if (type === 'edit') {
+  //     setItemBango(bango || '');
+  //   }
+  // }
 
   // ========== pagination ==========
-
-  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {
+  const skipToPage = function (cur: number) {
     setPageNo(cur);
+    doSearch(cur);
   };
 
   return (
@@ -85,7 +66,13 @@ const UserPage: React.FC = () => {
         onClose={() => {
           setOpenDialog(false);
         }}></UserDetailPage> */}
-      <div className="grid grid-cols-12">
+      <div className="grid grid-cols-12 relative">
+        {loading && <div className="absolute w-full h-full z-10 pt-20" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
+          <div className="grid grid-cols-1 justify-items-center gap-4">
+            <Text className="mt-12 text-center">Loading...</Text>
+            <Loader width="5rem" height="5rem" />
+          </div>
+        </div>}
         <div className="invisible col-span-12 my-0 flex h-0 items-center justify-center text-xl font-semibold lg:visible lg:my-5 lg:h-min print:visible print:my-5 print:h-min">
           ユーザ一覧
         </div>
@@ -116,16 +103,16 @@ const UserPage: React.FC = () => {
           </div>
 
           <div className="flex justify-end mt-6 mb-3">
-            <span className="cursor-pointer select-none mr-3" onClick={doSearch}>
+            <span className="cursor-pointer select-none mr-2" onClick={() => { skipToPage(1) }}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
             </span>
-            <span className="cursor-pointer select-none" onClick={() => { showDialog('add') }}>
+            {/* <span className="cursor-pointer select-none ml-3">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
               </svg>
-            </span>
+            </span> */}
           </div>
 
           <table className="w-full">
@@ -139,7 +126,7 @@ const UserPage: React.FC = () => {
               </tr>
             </thead>
           </table>
-          <div style={{ height: '500px' }} className="overflow-y-auto mb-4">
+          <div style={{ maxHeight: '500px' }} className="overflow-y-auto mb-4">
             <table className="w-full" style={{ marginTop: '-1px' }}>
               <tbody>
                 {userList?.map((data: any, index: number) => {
@@ -158,7 +145,7 @@ const UserPage: React.FC = () => {
                         {data.role}
                       </td>
                       <td className="pl-2 w-1/12 border border-gray-300">
-                        <span className="cursor-pointer select-none" onClick={() => { showDialog('edit', data.bango); }}>
+                        <span className="cursor-pointer select-none">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                           </svg>
@@ -170,7 +157,7 @@ const UserPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <Pagination sum={305} pageSize={0} pageNo={1} onSkipTo={skipToPage}></Pagination>
+          {sum > 0 && <Pagination sum={sum} pageSize={10} pageNo={pageNo} onSkipTo={skipToPage}></Pagination>}
         </div>
       </div>
     </>
