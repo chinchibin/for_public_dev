@@ -59,7 +59,6 @@ const useLogState = create<{
         list = prompts.items || [];
 
         setSum(prompts.sum);
-        updateLogList(list);
       } catch (e) {
         console.log(e);
         list = [];

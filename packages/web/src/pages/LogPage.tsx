@@ -40,13 +40,13 @@ const LogPage: React.FC = () => {
   }, []);
 
 
-  const doSearch = () => {
+  const doSearch = (curPage: number) => {
     const data = {
       torokuDt: '',
       bango: '',
       email: '',
       content: '',
-      page: pageNo.toString(),
+      page: curPage.toString(),
     };
     // selectedKey:0-社員番号, 1-email; value-入力値
     if (selectedKey === '0') {
@@ -58,19 +58,20 @@ const LogPage: React.FC = () => {
     } else if (selectedKey === '1' && selectedSubKey === '1') {
       data.email = email;
     }
-    search(data);    
+    search(data);
   }
 
   // ========== pagination ==========
 
-  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {    
-    setPageNo(cur);    
+  const skipToPage = function (cur: number, _e: React.MouseEvent<HTMLInputElement>) {
+    setPageNo(cur);
+    doSearch(cur);
   };
 
   return (
     <>
       <div className="grid grid-cols-12 relative">
-      {loading && <div className="absolute w-full h-full z-10 pt-20" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
+        {loading && <div className="absolute w-full h-full z-10 pt-20" style={{ backgroundColor: 'rgba(255,255,255,.8)' }}>
           <div className="grid grid-cols-1 justify-items-center gap-4">
             <Text className="mt-12 text-center">Loading...</Text>
             <Loader width="5rem" height="5rem" />
@@ -138,7 +139,7 @@ const LogPage: React.FC = () => {
           </div>
 
           <div className="flex justify-end mt-6 mb-3">
-            <span className="cursor-pointer select-none" onClick={doSearch}>
+            <span className="cursor-pointer select-none" onClick={()=>{doSearch(pageNo)}}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
@@ -155,7 +156,7 @@ const LogPage: React.FC = () => {
               </tr>
             </thead>
           </table>
-          <div style={{ height: '500px' }} className="overflow-y-auto mb-4">
+          <div style={{ maxHeight: '500px' }} className="overflow-y-auto mb-4">
             <table className="w-full" style={{ marginTop: '-1px' }}>
               <tbody>
                 {logList?.map((data: any, index: number) => {
