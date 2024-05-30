@@ -10,7 +10,7 @@ import {
 } from 'generative-ai-use-cases-jp';
 import * as crypto from 'crypto';
 import { DynamoDBClient, } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument,  paginateScan, ScanCommandInput, } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument,  paginateQuery, QueryCommandInput, } from '@aws-sdk/lib-dynamodb';
 import { S3Client, DeleteObjectCommand,  ListObjectsV2Command, PutObjectCommandInput, PutObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import {
   BatchWriteCommand,  
@@ -684,35 +684,37 @@ export const searchLog = async (tableName: string, condition: SearchLogCondition
     pageSize: 10,
   } 
   
-  const params: ScanCommandInput = {
+  const params: QueryCommandInput = {
     ProjectionExpression: 'dateFormatted, coNumber, email, content',
     TableName: tableName,
+    IndexName: 'CreatedDateIndex',
+    KeyConditionExpression: '#role = :role',
     ExpressionAttributeNames: {
       '#role' : 'role',
     },
+    ScanIndexForward: false,
     ExpressionAttributeValues: {
       ":role": "user",
     },
-    FilterExpression: '#role = :role '
   }
 
   if (condition.torokuDt){
-    params.FilterExpression += 'and begins_with(#date, :torokuDt)';
+    params.FilterExpression = 'begins_with(#date, :torokuDt)';
     params.ExpressionAttributeValues![':torokuDt'] = condition.torokuDt
     params.ExpressionAttributeNames!['#date'] = 'dateFormatted'
   }
   else if(condition.bango){
-    params.FilterExpression += 'and #bango = :bango';
+    params.FilterExpression = '#bango = :bango';
     params.ExpressionAttributeValues![':bango'] = condition.bango
     params.ExpressionAttributeNames!['#bango'] = 'coNumber'
   }
   else if(condition.email){
-    params.FilterExpression += 'and #email = :email';
+    params.FilterExpression = '#email = :email';
     params.ExpressionAttributeValues![':email'] = condition.email
     params.ExpressionAttributeNames!['#email'] = 'email'
   }
   else if(condition.content){
-    params.FilterExpression += 'and contains(#content, :content)';
+    params.FilterExpression = 'contains(#content, :content)';
     params.ExpressionAttributeValues![':content'] = condition.content
     params.ExpressionAttributeNames!['#content'] = 'content'
   }
@@ -720,34 +722,28 @@ export const searchLog = async (tableName: string, condition: SearchLogCondition
   let allPage = 0;
   const items: any[] = [];
 
-  if (!condition.torokuDt && !condition.bango &&
-      !condition.email && !condition.content
-  ){
-    console.log('0 count!')
-  }
-  else {
-    const paginator = paginateScan(paginatorConfig, params)
-    let pg = condition.page??'1'
-    const from = 10 * (Number(pg) - 1)
-    const to = 10 * Number(pg)
-    for await (const page of paginator){      
-      if (page.Items){
-        for (let li = 0; li < page.Items.length; li++) {
-          let index = allPage + li + 1
-          if(( index > from) && (index <= to)){
-            items.push({
-              'torokuDt': page.Items[li]['dateFormatted'],
-              'bango': page.Items[li]['coNumber'],
-              'email': page.Items[li]['email'],
-              'content': page.Items[li]['content'],
-            })
-          }
+  const paginator = paginateQuery(paginatorConfig, params)
+  let pg = condition.page??'1'
+  const from = 10 * (Number(pg) - 1)
+  const to = 10 * Number(pg)
+  for await (const page of paginator){      
+    if (page.Items){
+      for (let li = 0; li < page.Items.length; li++) {
+        let index = allPage + li + 1
+        if(( index > from) && (index <= to)){
+          items.push({
+            'torokuDt': page.Items[li]['dateFormatted'],
+            'bango': page.Items[li]['coNumber'],
+            'email': page.Items[li]['email'],
+            'content': page.Items[li]['content'],
+          })
         }
       }
-      
-      allPage = allPage + (page.Count ?? 0)
     }
+    
+    allPage = allPage + (page.Count ?? 0)
   }
+
   
   return {'sum': allPage, 'items': items}
 }
