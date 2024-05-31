@@ -33,6 +33,17 @@ export default function SignOutMenu({ label }: { label: string }) {
     location.href = path;
   }
 
+  const [authenticated, setAuthenticated] = React.useState(false)
+
+  const setFlag = async() =>{
+    const user = await Auth.currentUserInfo();    
+    setAuthenticated(user['attributes']['custom:spare_role'] === '9'?true:false);
+  }
+
+  React.useEffect(() => {    
+    setFlag();
+  }, [authenticated]);
+
   return (
     <div>
       <Button
@@ -66,18 +77,18 @@ export default function SignOutMenu({ label }: { label: string }) {
           </ListItemIcon>
           Log out
         </MenuItem>
-        <MenuItem onClick={() => { handleSkip('/document'); }}>
+        {authenticated && <MenuItem onClick={() => { handleSkip('/document'); }}>
           <ListItemIcon>
             <DocumentIcon></DocumentIcon>
           </ListItemIcon>
           ドキュメント一覧
-        </MenuItem>
-        <MenuItem onClick={() => { handleSkip('/log'); }}>
+        </MenuItem>}
+        {authenticated && <MenuItem onClick={() => { handleSkip('/log'); }}>
           <ListItemIcon>
             <LogsIcon></LogsIcon>
           </ListItemIcon>        
           利用ログ一覧
-        </MenuItem>
+        </MenuItem>}
         
       </Menu>
     </div>

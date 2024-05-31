@@ -29,6 +29,7 @@ import UserPage from './pages/UserPage.tsx';
 import LogPage from './pages/LogPage.tsx';
 // checkboxなどコンポーネント中のicon
 import { initializeIcons } from '@fluentui/react/lib/Icons';
+import PrivateRoute from './components/PrivateRoute.tsx';
 initializeIcons(/* optional base url */);
 
 const ragEnabled: boolean = import.meta.env.VITE_APP_RAG_ENABLED === 'true';
@@ -89,15 +90,15 @@ const routes: RouteObject[] = [
   },
   {
     path: '/document',
-    element: <DocumentPage />,
+    element: <PrivateRoute> <DocumentPage /> </PrivateRoute>,
   },
   {
     path: '/user',
-    element: <UserPage />,
+    element: <PrivateRoute> <UserPage /> </PrivateRoute>,
   },
   {
     path: '/log',
-    element: <LogPage />,
+    element: <PrivateRoute> <LogPage /> </PrivateRoute>
   },
   recognizeFileEnabled
     ? {
