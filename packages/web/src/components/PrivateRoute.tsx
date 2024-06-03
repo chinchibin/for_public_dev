@@ -4,7 +4,7 @@ import { Navigate, } from "react-router-dom";
 
 
 
-const PrivateRoute = ({children}) => {
+const PrivateRoute = ({children}: any) => {
   const [authenticated, setAuthenticated] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
 
